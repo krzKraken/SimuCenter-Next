@@ -38,6 +38,10 @@ accesibilidad y portabilidad.
 - Formato consistente de errores de API.
 - Request ID, logging estructurado del backend y diagnóstico controlado del
   frontend.
+- Procesamiento stateless compatible con múltiples réplicas.
+- Métricas operativas de tráfico, latencia, errores, recursos y dependencias.
+- Baseline reproducible de rendimiento y presupuestos agregados de recursos.
+- Observabilidad configurable para escenarios de alto volumen.
 - CI con controles básicos de calidad y seguridad.
 - Base de pruebas automatizadas.
 - Internacionalización en español e inglés desde la primera interfaz visible.
@@ -70,6 +74,11 @@ accesibilidad y portabilidad.
   distinguir un proceso vivo de uno preparado para recibir tráfico.
 - Como operador o desarrollador, quiero correlacionar respuestas y logs con un
   request ID para investigar fallos sin exponer información sensible.
+- Como operador, quiero métricas válidas y un baseline reproducible para
+  distinguir capacidad observada de estimaciones y detectar saturación.
+- Como responsable de plataforma, quiero presupuestos agregados de recursos y
+  procesamiento stateless para escalar réplicas sin multiplicar dependencias
+  de forma descontrolada.
 - Como persona usuaria, quiero que la primera interfaz sea utilizable en
   español e inglés, permita elegir el idioma y sea operable mediante teclado
   para que la foundation no genere deuda de localización o accesibilidad.
@@ -143,6 +152,43 @@ accesibilidad y portabilidad.
 - **REQ-001-016:** Las operaciones HTTP expuestas por esta foundation deben
   formar parte de un contrato OpenAPI versionado, consistente con el contrato
   de errores y validado automáticamente contra la implementación.
+- **REQ-001-017:** El procesamiento de solicitudes ordinarias debe ser
+  stateless: su corrección no puede depender de memoria mutable de una réplica.
+  El estado que deba compartirse entre réplicas debe externalizarse mediante un
+  mecanismo definido posteriormente. Las cachés locales solo pueden actuar
+  como optimizaciones prescindibles cuya pérdida no altere la corrección.
+- **REQ-001-018:** La foundation debe producir métricas operativas que permitan
+  observar cantidad de requests, duración, errores, throughput, CPU y memoria,
+  además de saturación y tiempo de espera de pools o dependencias cuando
+  existan. Cuando una operación use persistencia, las métricas deben incluir la
+  cantidad de operaciones o consultas de persistencia por request, su duración
+  acumulada y su duración máxima individual, sin registrar parámetros SQL ni
+  datos sensibles. La verificación debe detectar métricas ausentes, constantes
+  o inválidas en lugar de aceptarlas como evidencia.
+- **REQ-001-019:** Debe poder ejecutarse un baseline reproducible de rendimiento
+  cuyo reporte identifique la revisión de código, entorno y recursos, duración,
+  concurrencia, think time, mezcla de operaciones, throughput, p50, p95, p99,
+  errores, CPU, memoria y las métricas aplicables de pools y dependencias. Si la
+  mezcla incluye operaciones con persistencia, el reporte debe incluir por
+  request la cantidad de operaciones o consultas, su duración acumulada y su
+  duración máxima individual, sin parámetros SQL ni datos sensibles.
+- **REQ-001-020:** Los pools y límites de recursos deben ser configurables y
+  contar con un presupuesto documentado por proceso o réplica y un presupuesto
+  total esperado. La configuración debe impedir que aumentar workers o réplicas
+  multiplique conexiones o recursos sin control, y debe documentar timeouts y
+  comportamiento ante saturación.
+- **REQ-001-021:** La observabilidad de alto volumen no debe depender de emitir
+  un log informativo por cada request exitoso. Los niveles, el sampling o la
+  agregación deben ser configurables; los logs de errores emitidos deben
+  conservar su request ID cuando exista contexto; y ningún error puede perderse
+  silenciosamente. Ante una tormenta de errores puede aplicarse rate limiting,
+  agregación o sampling documentado. Si se reduce el detalle individual, deben
+  conservarse contadores del total observado y de las cantidades emitidas,
+  agregadas o suprimidas, además de muestras representativas correlacionables.
+  Los eventos obligatorios de seguridad o auditoría no pueden descartarse
+  silenciosamente; su política exacta se definirá en `security.md` o specs
+  posteriores. Las métricas HTTP deben usar plantillas de rutas y dimensiones
+  acotadas.
 
 ## Requisitos no funcionales
 
@@ -187,12 +233,50 @@ accesibilidad y portabilidad.
 - **NFR-001-012:** El diagnóstico del frontend debe excluir datos sensibles,
   evitar logs innecesarios de consola en producción y funcionar sin requerir
   un proveedor ni envío remoto de telemetría.
+- **NFR-001-013:** Backend y frontend deben ser compatibles con escalamiento
+  horizontal, de modo que dirigir solicitudes sucesivas a réplicas diferentes
+  no cambie el resultado correcto de una operación ordinaria por depender de
+  memoria mutable local.
+- **NFR-001-014:** Las métricas no deben usar dimensiones de alta cardinalidad,
+  incluidos `request_id`, `user_id`, `tenant_id` o la URL cruda; las dimensiones
+  y plantillas de rutas permitidas deben ser finitas y estar documentadas.
+- **NFR-001-015:** La evidencia del baseline debe poder reproducirse a partir
+  de las instrucciones y parámetros registrados, y cualquier métrica requerida
+  ausente, constante o inválida debe invalidar la conclusión correspondiente.
+- **NFR-001-016:** La verificación de pools y recursos debe calcular y contrastar
+  el presupuesto agregado esperado al variar la cantidad de workers y réplicas,
+  además de comprobar el comportamiento documentado ante saturación.
+- **NFR-001-017:** Una comprobación satisfactoria de health o readiness no debe
+  presentarse como demostración de capacidad de journeys u operaciones de
+  negocio.
 
-No se fijan en esta spec objetivos de latencia, disponibilidad, RPO, RTO ni
-versiones de runtimes, lenguajes, frameworks o herramientas. Esos valores
-requieren contexto operacional o decisiones posteriores y no pueden inferirse
-del legacy. La matriz de navegadores soportados sí queda definida en
+No se fija en esta spec un único SLO numérico global de latencia ni objetivos de
+disponibilidad, RPO, RTO o versiones de runtimes, lenguajes, frameworks o
+herramientas. Esos valores requieren contexto operacional o decisiones
+posteriores. La matriz de navegadores soportados sí queda definida en
 `NFR-001-011`.
+
+## Objetivos evolutivos de capacidad
+
+Esta sección expresa dirección futura y no constituye aceptación de
+`SPEC-001`.
+
+- El primer objetivo evolutivo es soportar 500 usuarios activos con
+  aproximadamente una acción cada cinco segundos, equivalente a unas 100
+  requests por segundo en promedio bajo ese patrón.
+- Los escalones posteriores son 1000, 2500 y 5000 usuarios activos.
+- El objetivo de 5000 usuarios equivale aproximadamente a 1000 requests por
+  segundo en promedio bajo el mismo patrón.
+- Los bursts, la mezcla real de journeys, el volumen de datos y los presupuestos
+  de latencia se definirán en una spec posterior de capacidad y rendimiento.
+- Los reportes y trabajos pesados tendrán presupuestos separados o ejecución
+  diferida cuando corresponda.
+- Cada journey crítico respaldado por persistencia deberá definir en una spec
+  posterior un presupuesto verificable de cantidad y tiempo de consultas,
+  usando datos y volumen representativos en lugar de un número global
+  arbitrario.
+- `SPEC-001` crea la instrumentación y la capacidad de medición; no demuestra
+  ninguno de estos niveles de capacidad.
 
 ## Reglas de negocio
 
@@ -215,6 +299,23 @@ del legacy. La matriz de navegadores soportados sí queda definida en
   accesible. No representa un flujo de negocio.
 - El backend produce logs estructurados. El frontend limita su observabilidad a
   diagnóstico controlado sin datos sensibles ni telemetría remota obligatoria.
+- La corrección de una solicitud ordinaria no depende de memoria mutable de una
+  réplica; una caché local puede perderse sin modificar el resultado correcto.
+- Los límites de pools y recursos se evalúan de forma agregada para todos los
+  procesos y réplicas previstos, no solo de manera aislada por proceso.
+- Las métricas usan plantillas de rutas y dimensiones acotadas. Los IDs de
+  request, usuario o tenant y las URL crudas no se admiten como dimensiones.
+- Una respuesta satisfactoria de health o readiness no demuestra capacidad de
+  operaciones de negocio.
+- El logging de alto volumen puede reducir, limitar, muestrear o agregar eventos
+  informativos exitosos y errores conforme a una política documentada. Ningún
+  error puede perderse silenciosamente: si se reduce su detalle individual, se
+  conservan contadores del total y de las cantidades emitidas, agregadas o
+  suprimidas, junto con muestras representativas que incluyan request ID cuando
+  exista contexto.
+- Los eventos obligatorios de seguridad o auditoría no pueden descartarse
+  silenciosamente. Su clasificación, conservación y tratamiento exactos se
+  definirán en `security.md` o en las specs que los introduzcan.
 - Las comprobaciones del frontend facilitan la experiencia, pero la autoridad
   de cualquier capacidad futura residirá en el backend.
 - La estructura debe respetar ADR-0001: monolito modular y dependencias
@@ -248,6 +349,28 @@ del legacy. La matriz de navegadores soportados sí queda definida en
   dentro de esta foundation.
 - Si un control obligatorio de CI no puede ejecutarse, el resultado debe
   considerarse no satisfactorio, no equivalente a una prueba pasada.
+- Si solicitudes sucesivas llegan a réplicas diferentes, su corrección no debe
+  depender de estado mutable conservado por una réplica anterior.
+- Si una métrica requerida está ausente, permanece constante ante cambios de
+  carga o contiene valores inválidos, no puede usarse para concluir que el
+  recurso medido no está saturado.
+- Si una dependencia con pool alcanza su límite, el timeout y la respuesta ante
+  saturación deben coincidir con el comportamiento documentado y quedar
+  reflejados en métricas.
+- Si cambia la cantidad de workers o réplicas, debe recalcularse el consumo
+  agregado esperado y respetarse el presupuesto documentado.
+- Si una tormenta de errores activa rate limiting, agregación o sampling, los
+  errores no deben perderse silenciosamente: los logs emitidos conservan
+  request ID cuando exista contexto, y la observabilidad mantiene contadores
+  del total observado y de las cantidades emitidas, agregadas o suprimidas,
+  además de muestras representativas correlacionables.
+- Si un evento está clasificado como obligatorio de seguridad o auditoría, no
+  puede descartarse silenciosamente aunque exista saturación; su tratamiento
+  debe seguir la política definida en `security.md` o en la spec aplicable.
+- Si una métrica HTTP recibe una URL cruda o un identificador de request,
+  usuario o tenant como dimensión, la verificación debe rechazar esa emisión.
+- Si health o readiness resulta satisfactorio, ese resultado no puede
+  publicarse como evidencia de capacidad de journeys de negocio.
 
 ## Fuera de alcance
 
@@ -263,6 +386,10 @@ del legacy. La matriz de navegadores soportados sí queda definida en
 - IoT, monitor, desfibrilador y debrief.
 - Despliegue productivo definitivo.
 - SLA contractual.
+- Demostración de capacidad para 500, 1000, 2500 o 5000 usuarios activos.
+- Definición de un SLO global de latencia, perfiles de bursts, mezcla completa
+  de journeys de negocio o presupuestos de reportes y trabajos pesados.
+- Dimensionamiento definitivo de infraestructura y topología productiva.
 
 ## Dependencias
 
@@ -270,6 +397,11 @@ del legacy. La matriz de navegadores soportados sí queda definida en
 - `ADR-0001: Monolito modular orientado por dominios`, estado `Accepted`.
 - `ADR-0002: PostgreSQL compartido con aislamiento tenant mediante RLS`, estado
   `Accepted`; sus controles tenant quedan fuera de implementación en esta spec.
+- `docs/legacy-analysis/11_PERFORMANCE_EVIDENCE.md`, como evidencia histórica
+  sanitizada para definir necesidades de medición sin atribuir capacidad a
+  SimuCenter Next.
+- Una spec posterior de capacidad y rendimiento para definir carga, journeys,
+  volumen de datos, presupuestos de latencia, RPO, RTO y objetivos de capacidad.
 - Revisión completa y aprobación explícita de los requisitos; las decisiones
   parciales `Q-001-001`, `Q-001-002` y `Q-001-003` no equivalen a esa aprobación
   general.
@@ -322,6 +454,20 @@ del legacy. La matriz de navegadores soportados sí queda definida en
 - **Justificación:** Son restricciones vigentes de SimuCenter Next y se
   concretan aquí solo para el alcance de platform foundation.
 
+### Evidencia histórica de rendimiento
+
+- **Fuente consultada:**
+  `docs/legacy-analysis/11_PERFORMANCE_EVIDENCE.md`
+- **Comportamiento encontrado:** Las muestras parciales registran sus propias
+  distribuciones de latencia y entre 8.7 y 13 consultas por request; otros
+  artefactos registran agotamiento de un pool y límites de volumen de logging.
+  Las mediciones de CPU y memoria no permiten concluir ausencia de saturación,
+  y los artefactos no demuestran una capacidad completa de 500 usuarios.
+- **Decisión:** `REDESIGN`
+- **Justificación:** La foundation incorpora instrumentación validable,
+  procesamiento stateless, presupuestos agregados y un baseline reproducible;
+  las metas de capacidad quedan para una spec posterior.
+
 ## Supuestos
 
 - No se adopta ninguna suposición material para aprobar esta spec. Las
@@ -348,12 +494,22 @@ del legacy. La matriz de navegadores soportados sí queda definida en
   foco visible. No incluye login, navegación de negocio, dashboard ni datos
   simulados.
 
-Estas decisiones parciales no cambian el estado `Draft` ni constituyen la
-aprobación general de los requisitos.
+Estas decisiones fueron incorporadas antes de la aprobación original de los
+requisitos y permanecen vigentes durante la revisión del cambio posterior.
+
+## Control de cambios
+
+- **Aprobación original de requisitos:** estado `Aprobado`, aprobado por
+  `Product Owner` el `2026-09-19`, con la referencia
+  `Aprobación explícita de los requisitos de SPEC-001 durante la revisión SDD.`
+- Product Owner aprobó el `2026-09-19` la solicitud de incorporar la estrategia
+  de rendimiento basada en evidencia del legacy.
+- Los requisitos modificados fueron reaprobados explícitamente por Product Owner
+  el `2026-09-19`.
 
 ## Aprobación de requisitos
 
 - **Estado:** `Aprobado`
 - **Aprobado por:** `Product Owner`
 - **Fecha:** `2026-09-19`
-- **Comentario o referencia:** `Aprobación explícita de los requisitos de SPEC-001 durante la revisión SDD.`
+- **Comentario o referencia:** `Reaprobación explícita de los requisitos modificados de SPEC-001 después de incorporar la estrategia de rendimiento basada en evidencia del legacy.`
