@@ -1,0 +1,9 @@
+openapi: 3.1.0
+info:
+  title: <FEATURE_NAME> API contract
+  version: 0.0.0
+  description: >-
+    Placeholder contract for <SPEC_ID>. Add only endpoints approved by the
+    corresponding specification.
+servers: []
+paths: {}
