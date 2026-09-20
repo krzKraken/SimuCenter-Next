@@ -1,0 +1,297 @@
+openapi: 3.1.0
+info:
+  title: SimuCenter Platform Foundation API
+  version: 1.0.0
+  description: >-
+    Contrato HTTP aprobado de SPEC-001 Platform Foundation. Documenta
+    únicamente las comprobaciones de vida y readiness aprobadas. Las rutas
+    /health y /ready fueron seleccionadas porque los requisitos aprobados no
+    fijaban nombres de ruta. No documenta autenticación, tenancy, operaciones
+    de negocio, persistencia ni un transporte HTTP para métricas.
+servers: []
+tags:
+  - name: Operations
+    description: Comprobaciones operativas mínimas de Platform Foundation.
+x-spec-reference: SPEC-001
+x-contract-status: approved
+x-approval:
+  status: approved
+  approved-by: Product Owner
+  date: '2026-09-20'
+  reference: >-
+    Aprobación explícita del contrato OpenAPI 1.0.0 de SPEC-001 Platform
+    Foundation durante la revisión SDD.
+x-traceability:
+  requirements:
+    - REQ-001-005
+    - REQ-001-006
+    - REQ-001-007
+    - REQ-001-008
+    - REQ-001-016
+  acceptance:
+    - AC-001-009
+    - AC-001-010
+    - AC-001-011
+    - AC-001-012
+    - AC-001-013
+    - AC-001-014
+    - AC-001-015
+    - AC-001-016
+    - AC-001-030
+  security-controls:
+    - SEC-001-003
+    - SEC-001-004
+    - SEC-001-005
+    - SEC-001-006
+    - SEC-001-028
+    - SEC-001-029
+paths:
+  /health:
+    get:
+      tags:
+        - Operations
+      summary: Comprobar que el proceso está vivo
+      description: >-
+        Devuelve únicamente la vida del proceso. Esta operación no consulta,
+        enumera ni expone dependencias, configuración o detalles internos. Una
+        respuesta satisfactoria no demuestra readiness ni capacidad de negocio.
+      operationId: getProcessHealth
+      x-route-selection: approved-contract
+      x-access-classification: probe-or-operator
+      x-public-exposure: plan-dependent-minimal-response-only
+      x-traceability:
+        requirements:
+          - REQ-001-005
+          - REQ-001-007
+          - REQ-001-008
+          - REQ-001-016
+        acceptance:
+          - AC-001-009
+          - AC-001-011
+          - AC-001-012
+          - AC-001-013
+          - AC-001-014
+          - AC-001-015
+          - AC-001-016
+          - AC-001-030
+        security-controls:
+          - SEC-001-003
+          - SEC-001-004
+          - SEC-001-006
+          - SEC-001-028
+          - SEC-001-029
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          $ref: '#/components/responses/HealthAlive'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /ready:
+    get:
+      tags:
+        - Operations
+      summary: Comprobar que la aplicación está lista
+      description: >-
+        Devuelve si la aplicación y sus dependencias obligatorias están listas
+        para atender tráfico. La respuesta nunca enumera dependencias ni expone
+        nombres, direcciones, causas, configuración o detalles internos.
+        Readiness es una superficie operacional y no se declara pública.
+      operationId: getApplicationReadiness
+      x-route-selection: approved-contract
+      x-access-classification: operational
+      x-access-default: deny
+      x-access-enforcement: network-or-platform-boundary-defined-in-plan
+      x-traceability:
+        requirements:
+          - REQ-001-006
+          - REQ-001-007
+          - REQ-001-008
+          - REQ-001-016
+        acceptance:
+          - AC-001-010
+          - AC-001-011
+          - AC-001-012
+          - AC-001-013
+          - AC-001-014
+          - AC-001-015
+          - AC-001-016
+          - AC-001-030
+        security-controls:
+          - SEC-001-003
+          - SEC-001-005
+          - SEC-001-006
+          - SEC-001-028
+          - SEC-001-029
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          $ref: '#/components/responses/ReadinessReady'
+        '503':
+          $ref: '#/components/responses/ReadinessNotReady'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  schemas:
+    ValidRequestId:
+      type: string
+      minLength: 1
+      maxLength: 128
+      pattern: '^[A-Za-z0-9._-]+$'
+      description: >-
+        Identificador ASCII de correlación válido, formado únicamente por
+        caracteres alfanuméricos, punto, guion o guion bajo.
+      example: synthetic-request-001
+    IncomingRequestId:
+      type: string
+      description: >-
+        Valor candidato recibido en X-Request-ID. El backend decide si cumple
+        el esquema ValidRequestId. Si está ausente o no lo cumple, lo descarta
+        completamente y genera un identificador válido; no lo trunca ni lo
+        normaliza. Su ausencia o invalidez no produce por sí sola una respuesta
+        400.
+      example: synthetic-candidate-request-id
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - alive
+          description: Indica únicamente que el proceso está vivo.
+    ReadinessReadyResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ready
+          description: Indica que la aplicación está lista para atender tráfico.
+    ReadinessNotReadyResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - not_ready
+          description: Indica únicamente que la aplicación no está lista.
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - message
+        - request_id
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 64
+          pattern: '^[A-Z][A-Z0-9_]*$'
+          description: Código público estable del error.
+        message:
+          type: string
+          minLength: 1
+          maxLength: 256
+          description: >-
+            Mensaje público seguro sin stack traces, excepciones crudas ni
+            detalles internos.
+        request_id:
+          $ref: '#/components/schemas/ValidRequestId'
+  parameters:
+    RequestId:
+      name: X-Request-ID
+      in: header
+      required: false
+      description: >-
+        Request ID opcional. Un valor válido se devuelve sin cambios. Un valor
+        ausente o inválido se descarta completo y el backend lo reemplaza por
+        uno generado; nunca se trunca ni normaliza el valor recibido.
+      schema:
+        $ref: '#/components/schemas/IncomingRequestId'
+      example: synthetic-request-001
+  headers:
+    RequestId:
+      description: >-
+        Request ID válido y obligatorio de la respuesta. Coincide sin cambios
+        con el valor válido recibido o contiene el valor generado por el backend
+        cuando la solicitud no proporciona uno aceptable.
+      required: true
+      schema:
+        $ref: '#/components/schemas/ValidRequestId'
+      example: synthetic-request-001
+  responses:
+    HealthAlive:
+      description: El proceso está vivo; no expresa estado de dependencias.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HealthResponse'
+          examples:
+            synthetic-non-production:
+              summary: Ejemplo sintético no productivo
+              value:
+                status: alive
+    ReadinessReady:
+      description: La aplicación y sus dependencias obligatorias están listas.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReadinessReadyResponse'
+          examples:
+            synthetic-non-production:
+              summary: Ejemplo sintético no productivo
+              value:
+                status: ready
+    ReadinessNotReady:
+      description: >-
+        HTTP 503 es el resultado normal y no satisfactorio de la comprobación
+        de readiness cuando la aplicación no está lista. La operación fue
+        procesada correctamente; este resultado no representa una respuesta de
+        error de API bajo REQ-001-007. Por eso usa el cuerpo mínimo
+        {status: not_ready} y no ErrorResponse, sin exponer causas ni detalles
+        de dependencias.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReadinessNotReadyResponse'
+          examples:
+            synthetic-non-production:
+              summary: Ejemplo sintético no productivo
+              value:
+                status: not_ready
+    InternalServerError:
+      description: Error interno sanitizado sin detalles de implementación.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            synthetic-non-production:
+              summary: Ejemplo sintético no productivo
+              value:
+                code: INTERNAL_ERROR
+                message: An unexpected error occurred.
+                request_id: synthetic-request-001
