@@ -4,7 +4,7 @@
 
 - **ID:** `SPEC-001`
 - **Nombre:** `Platform Foundation`
-- **Estado:** `Requirements Approved`
+- **Estado:** `Design Approved`
 - **Responsable:** `Product Owner`
 - **Fecha:** `2026-09-19`
 - **Última actualización:** `2026-09-20`
@@ -640,6 +640,11 @@ requisitos y permanecen vigentes durante la revisión del cambio posterior.
   controlada, pero no constituye reaprobación de los requisitos resultantes.
 - Los requisitos modificados para incorporar la base del sistema de diseño
   fueron reaprobados explícitamente por Product Owner el `2026-09-20`.
+- SPEC-001 alcanzó `Design Approved` el `2026-09-20` tras verificar las
+  aprobaciones vigentes de `acceptance.md`, `security.md`, `ui-design.md`,
+  `data-model.md` y `contracts/openapi.yaml`. Esta transición habilita la
+  redacción de `plan.md`, pero no constituye aprobación anticipada del plan ni
+  autorización de implementación.
 
 ## Aprobación de requisitos
 
