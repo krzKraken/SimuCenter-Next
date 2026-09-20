@@ -7,15 +7,16 @@
 - **Estado:** `Requirements Approved`
 - **Responsable:** `Product Owner`
 - **Fecha:** `2026-09-19`
-- **Última actualización:** `2026-09-19`
+- **Última actualización:** `2026-09-20`
 
 ## Problema
 
 SimuCenter Next necesita una base ejecutable y verificable antes de incorporar
 tenancy, identity o capacidades de negocio. Sin esa base, cada dominio podría
 resolver de forma distinta el arranque, la configuración, los errores, la
-observabilidad, las pruebas, la internacionalización y la accesibilidad,
-repitiendo el acoplamiento y la deuda observados en el sistema legacy.
+observabilidad, las pruebas, la internacionalización, la accesibilidad, el
+sistema visual, los componentes y las interacciones, repitiendo el acoplamiento
+y la deuda observados en el sistema legacy.
 
 La foundation debe demostrar que backend y frontend pueden desarrollarse,
 ejecutarse y verificarse de manera reproducible, sin anticipar funcionalidades
@@ -26,7 +27,9 @@ ni decisiones técnicas que corresponden a specs, ADR o planes posteriores.
 Definir los cimientos verificables sobre los que se implementarán
 posteriormente tenancy, identity y los dominios de negocio, con contratos
 básicos de ejecución, configuración, operación, calidad, localización,
-accesibilidad y portabilidad.
+accesibilidad y portabilidad, además de una base visual compartida y versionada
+que permita construir interfaces futuras de forma consistente sin acoplar la
+identidad del producto a una implementación técnica concreta.
 
 ## Alcance incluido
 
@@ -47,6 +50,14 @@ accesibilidad y portabilidad.
 - Internacionalización en español e inglés desde la primera interfaz visible.
 - Selector de idioma español/inglés y reglas de selección y fallback definidas.
 - Baseline inicial de accesibilidad.
+- Sistema visual versionado basado en design tokens semánticos.
+- Dirección visual inicial de la aplicación y valores concretos de su primera
+  versión definidos en un `ui-design.md` versionado y aprobado explícitamente
+  por Product Owner antes de redactar `plan.md`.
+- Base compartida de componentes, estados e interacciones para la interfaz
+  inicial.
+- Catálogo ejecutable y versionado del sistema visual y estrategia verificable
+  de regresión visual.
 - Portabilidad mediante estándares abiertos y contenedores.
 - Documentación mínima para levantar y verificar el proyecto.
 - Contrato OpenAPI versionado para las operaciones HTTP incluidas en esta spec.
@@ -82,6 +93,9 @@ accesibilidad y portabilidad.
 - Como persona usuaria, quiero que la primera interfaz sea utilizable en
   español e inglés, permita elegir el idioma y sea operable mediante teclado
   para que la foundation no genere deuda de localización o accesibilidad.
+- Como equipo de producto y desarrollo, quiero una base visual y componentes
+  compartidos, documentados y verificables para que las interfaces futuras no
+  creen estilos, estados o interacciones incompatibles entre sí.
 - Como equipo responsable de un dominio futuro, quiero contratos comunes de
   errores, configuración y observabilidad para incorporar capacidades sin
   redefinir la plataforma.
@@ -189,6 +203,49 @@ accesibilidad y portabilidad.
   silenciosamente; su política exacta se definirá en `security.md` o specs
   posteriores. Las métricas HTTP deben usar plantillas de rutas y dimensiones
   acotadas.
+- **REQ-001-022:** Debe existir un sistema visual versionado basado en design
+  tokens semánticos que defina, como mínimo, colores semánticos, tipografía,
+  espaciado, tamaños, bordes, radios, sombras, breakpoints y capas o elevación
+  cuando apliquen. `SPEC-001` define las categorías, semántica, obligaciones de
+  cobertura, versionado y aplicabilidad de los tokens; los valores concretos
+  aprobados para la versión inicial del producto deben definirse en
+  `specs/001-platform-foundation/ui-design.md`. Ni las categorías ni sus valores
+  pueden acoplarse a un framework, librería o tecnología de presentación.
+- **REQ-001-023:** Debe existir una base de componentes compartidos utilizada
+  por la interfaz inicial que incluya, como mínimo, botón, selector de idioma,
+  indicador de estado, mensaje o alerta y primitivas de layout. Cada componente
+  debe consumir el sistema de tokens y exponer solo las variantes y usos
+  documentados.
+- **REQ-001-024:** Cada componente compartido debe declarar cuáles de los
+  estados `default`, `hover`, `focus-visible`, `active`, `disabled`, `loading`,
+  `success`, `warning` y `error` le aplican, y presentar esos estados de forma
+  homogénea y verificable. La no aplicabilidad de un estado debe quedar
+  documentada en lugar de resolverse mediante una omisión implícita.
+- **REQ-001-025:** Debe existir un catálogo o documentación ejecutable y
+  versionada que permita inspeccionar los tokens, componentes, variantes,
+  estados, reglas de uso y ejemplos permitidos incluidos en esta spec. El
+  catálogo debe poder verificarse localmente y en CI sin convertirse en una
+  aplicación o navegación de negocio.
+- **REQ-001-026:** Una capacidad visual o de interacción ya cubierta por el
+  sistema compartido debe reutilizar su token, primitiva o componente. Se
+  prohíben componentes o estilos duplicados para esa capacidad salvo una
+  excepción documentada que identifique la necesidad, justificación, alcance y
+  criterio para eliminarla o incorporarla al sistema compartido.
+- **REQ-001-027:** Debe existir una estrategia automatizable y reproducible de
+  regresión visual para los componentes, variantes y estados cubiertos por esta
+  spec. Sus diferencias deben revisarse explícitamente; una captura o
+  comparación visual complementa y no sustituye pruebas funcionales, de
+  interacción ni de accesibilidad.
+- **REQ-001-028:** Antes de redactar `plan.md` debe existir
+  `specs/001-platform-foundation/ui-design.md` como artefacto versionado y contar
+  con aprobación explícita del Product Owner. Debe definir la dirección visual
+  inicial aprobada del producto; los valores concretos de los tokens; la
+  tipografía; los colores y sus usos semánticos; el espaciado y layout; la
+  anatomía, variantes y estados de los componentes mínimos; el comportamiento
+  responsive; las reglas de teclado, foco e interacción; y la relación
+  trazable entre el diseño, el catálogo ejecutable y los componentes
+  implementados. El artefacto debe conservar la independencia respecto de
+  frameworks, librerías y herramientas concretas.
 
 ## Requisitos no funcionales
 
@@ -249,12 +306,34 @@ accesibilidad y portabilidad.
 - **NFR-001-017:** Una comprobación satisfactoria de health o readiness no debe
   presentarse como demostración de capacidad de journeys u operaciones de
   negocio.
+- **NFR-001-018:** Todos los componentes interactivos incluidos deben cumplir
+  los criterios aplicables de WCAG 2.2 AA y superar verificaciones de operación
+  mediante teclado, orden de foco, foco visible, semántica, nombre accesible y
+  contraste en cada variante y estado aplicable.
+- **NFR-001-019:** Los componentes, primitivas de layout y estados incluidos
+  deben conservar contenido, jerarquía, operación y ausencia de desbordamientos
+  que impidan el uso en los breakpoints documentados, y mostrar comportamiento
+  consistente en toda la matriz de navegadores aprobada por `NFR-001-011`.
+- **NFR-001-020:** Una validación reproducible debe comprobar que el catálogo
+  contiene todas las categorías mínimas de tokens, todos los componentes
+  mínimos, sus variantes, la aplicabilidad de los estados y al menos un ejemplo
+  permitido por caso documentado, y debe fallar ante referencias inexistentes,
+  cobertura incompleta o versiones incompatibles.
+- **NFR-001-021:** La regresión visual debe cubrir, en los breakpoints
+  documentados, cada componente y cada variante o estado aplicable incluidos en
+  esta spec; debe detectar diferencias no aprobadas y conservar evidencia
+  vinculada a la revisión, sin considerarse evidencia suficiente de
+  comportamiento funcional o conformidad de accesibilidad.
 
 No se fija en esta spec un único SLO numérico global de latencia ni objetivos de
 disponibilidad, RPO, RTO o versiones de runtimes, lenguajes, frameworks o
 herramientas. Esos valores requieren contexto operacional o decisiones
 posteriores. La matriz de navegadores soportados sí queda definida en
-`NFR-001-011`.
+`NFR-001-011`. Tampoco se seleccionan aquí framework UI, librería de
+componentes, herramienta de catálogo ni herramienta de regresión visual. La
+dirección visual y los valores concretos de la versión inicial se definen y
+aprueban en `ui-design.md`; esta spec no exige una identidad corporativa o guía
+de marketing completa.
 
 ## Objetivos evolutivos de capacidad
 
@@ -290,6 +369,22 @@ Esta sección expresa dirección futura y no constituye aceptación de
   internos solo pueden aparecer en observabilidad autorizada y depurada.
 - Toda cadena visible se gestiona mediante internacionalización desde su
   incorporación.
+- La identidad visual del producto se expresa mediante contratos semánticos y
+  versionados; no depende de que una tecnología, framework o librería concreta
+  actúe como fuente de verdad.
+- `ui-design.md` es la fuente aprobada para la dirección visual inicial y los
+  valores concretos de tokens de la aplicación. Su aprobación no equivale a un
+  rediseño integral de marca ni a una guía de identidad corporativa.
+- La interfaz inicial reutiliza los tokens y componentes compartidos. Una
+  variante, estado o estilo nuevo requiere incorporarse al contrato compartido
+  o documentar y justificar una excepción conforme a `REQ-001-026`.
+- Los estados solo se omiten cuando su no aplicabilidad está declarada. Un
+  nombre distinto no convierte en nueva una capacidad visual o de interacción
+  equivalente ya cubierta.
+- El catálogo ejecutable documenta el contrato permitido, pero no sustituye la
+  verificación de la interfaz integrada.
+- La regresión visual detecta cambios de presentación; no sustituye pruebas
+  funcionales, de teclado, semántica, contraste ni accesibilidad.
 - La resolución futura del idioma sigue el orden usuario, tenant, navegador y
   fallback. En esta foundation, el navegador determina español o inglés cuando
   solicita uno de esos idiomas; cualquier valor no soportado o indeterminado
@@ -371,6 +466,25 @@ Esta sección expresa dirección futura y no constituye aceptación de
   usuario o tenant como dimensión, la verificación debe rechazar esa emisión.
 - Si health o readiness resulta satisfactorio, ese resultado no puede
   publicarse como evidencia de capacidad de journeys de negocio.
+- Si una categoría de token mínima no aplica a la interfaz inicial, el catálogo
+  debe registrar la justificación y no puede omitirla silenciosamente.
+- Si un estado no aplica a un componente, su matriz debe marcarlo expresamente;
+  si aplica, debe existir un ejemplo ejecutable y verificable.
+- Si el viewport coincide con un breakpoint documentado o se sitúa entre dos,
+  los componentes no deben perder contenido, orden de foco ni operabilidad por
+  desbordamiento o solapamiento.
+- Si aparece una necesidad ya cubierta por el sistema compartido, debe
+  reutilizarse la capacidad existente; si existe una diferencia material, la
+  excepción debe documentarse antes de crear una alternativa.
+- Si una comparación visual cambia, la evidencia no puede actualizarse o
+  aceptarse silenciosamente; debe distinguir un cambio esperado de una
+  regresión y conservar la revisión correspondiente.
+- Si una captura visual coincide pero falla una prueba funcional o de
+  accesibilidad, el resultado global sigue siendo no satisfactorio.
+- Si `specs/001-platform-foundation/ui-design.md` no existe o no cuenta con
+  aprobación explícita del Product Owner, no puede redactarse `plan.md` ni
+  comenzar la implementación frontend; no se permite sustituir esa aprobación
+  por valores visuales provisionales.
 
 ## Fuera de alcance
 
@@ -379,7 +493,13 @@ Esta sección expresa dirección futura y no constituye aceptación de
 - Organizations y tenants.
 - Tablas tenant y políticas RLS.
 - Módulos de negocio.
-- Navegación de negocio, dashboard y datos simulados.
+- Navegación de negocio o principal, dashboards, formularios complejos, tablas,
+  datos simulados y componentes específicos de dominios futuros; se
+  incorporarán mediante sus specs posteriores.
+- Rediseño integral de marca, materiales comerciales y definición de una
+  identidad corporativa o guía de marketing completa.
+- Elección de framework UI, librería de componentes, herramienta de catálogo o
+  herramienta de regresión visual.
 - Correo, push y notificaciones funcionales.
 - Aplicaciones móviles.
 - Moodle.
@@ -402,11 +522,20 @@ Esta sección expresa dirección futura y no constituye aceptación de
   SimuCenter Next.
 - Una spec posterior de capacidad y rendimiento para definir carga, journeys,
   volumen de datos, presupuestos de latencia, RPO, RTO y objetivos de capacidad.
+- Specs posteriores para ampliar el sistema compartido con formularios
+  complejos, tablas, navegación principal, dashboards o componentes propios de
+  cada dominio, sin anticiparlos en la foundation.
+- Creación, revisión y aprobación explícita por Product Owner de
+  `specs/001-platform-foundation/ui-design.md` como artefacto versionado que
+  concrete la dirección y los valores exigidos por `REQ-001-022` y
+  `REQ-001-028`; su aprobación es obligatoria antes de redactar `plan.md` o
+  comenzar la implementación frontend.
 - Revisión completa y aprobación explícita de los requisitos; las decisiones
   parciales `Q-001-001`, `Q-001-002` y `Q-001-003` no equivalen a esa aprobación
   general.
-- Aprobación posterior de `acceptance.md` y `security.md` antes de redactar el
-  plan, conforme al ciclo SDD.
+- Revisión y actualización posterior, cuando corresponda, de `acceptance.md` y
+  `security.md`, seguida de su aprobación explícita antes de redactar el plan,
+  conforme al ciclo SDD.
 
 ## Contexto legacy relevante
 
@@ -506,10 +635,15 @@ requisitos y permanecen vigentes durante la revisión del cambio posterior.
   de rendimiento basada en evidencia del legacy.
 - Los requisitos modificados fueron reaprobados explícitamente por Product Owner
   el `2026-09-19`.
+- Product Owner autorizó el `2026-09-20` incorporar a los requisitos una base
+  mínima de sistema de diseño. Esta autorización habilita la modificación
+  controlada, pero no constituye reaprobación de los requisitos resultantes.
+- Los requisitos modificados para incorporar la base del sistema de diseño
+  fueron reaprobados explícitamente por Product Owner el `2026-09-20`.
 
 ## Aprobación de requisitos
 
 - **Estado:** `Aprobado`
 - **Aprobado por:** `Product Owner`
-- **Fecha:** `2026-09-19`
-- **Comentario o referencia:** `Reaprobación explícita de los requisitos modificados de SPEC-001 después de incorporar la estrategia de rendimiento basada en evidencia del legacy.`
+- **Fecha:** `2026-09-20`
+- **Comentario o referencia:** `Reaprobación explícita de los requisitos modificados de SPEC-001 después de incorporar la base del sistema de diseño.`
