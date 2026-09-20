@@ -596,6 +596,193 @@ Referencia: `SPEC-001`
 - **Estado de prueba:** `Pendiente de implementación`
 - **Evidencia final:** `Pendiente`
 
+### AC-001-042 — Diseño visual versionado y aprobado antes del plan
+
+- **Relacionado con:** `REQ-001-028`
+- **Given:** la revisión de requisitos aprobada y la evaluación de elegibilidad
+  para redactar `plan.md`;
+- **When:** se revisa el artefacto
+  `specs/001-platform-foundation/ui-design.md` de la misma revisión;
+- **Then:** el archivo existe, declara su versión, define la dirección visual
+  inicial, valores concretos de tokens, tipografía, colores y usos semánticos,
+  espaciado y layout, anatomía, variantes y estados de los componentes mínimos,
+  comportamiento responsive, reglas de teclado, foco e interacción y la
+  relación trazable entre diseño, catálogo y componentes, manteniendo
+  independencia de frameworks, librerías y herramientas concretas; además
+  registra aprobación explícita del Product Owner. Si falta el archivo, algún
+  contenido mínimo, su versión o la aprobación, la spec no queda habilitada
+  para redactar `plan.md`.
+- **Tipo de prueba esperada:** `INTEGRATION`
+- **Prueba relacionada:** `TEST-001-042`
+- **Estado de prueba:** `Pendiente de implementación`
+- **Evidencia final:** `Pendiente`
+
+### AC-001-043 — Inventario y contrato de design tokens
+
+- **Relacionado con:** `REQ-001-022`, `REQ-001-028`, `NFR-001-020`
+- **Given:** el sistema visual y `ui-design.md` versionados;
+- **When:** se valida el inventario de tokens contra las categorías obligatorias
+  de `SPEC-001`;
+- **Then:** el inventario cubre colores semánticos, tipografía, espaciado,
+  tamaños, bordes, radios, sombras, breakpoints y capas o elevación; para cada
+  categoría declara valores concretos, semántica, aplicabilidad y versión, o
+  justifica expresamente su no aplicabilidad, y ninguna definición depende de
+  nombres o contratos propios de un framework o librería.
+- **Tipo de prueba esperada:** `INTEGRATION`
+- **Prueba relacionada:** `TEST-001-043`
+- **Estado de prueba:** `Pendiente de implementación`
+- **Evidencia final:** `Pendiente`
+
+### AC-001-044 — Componentes mínimos compartidos en la interfaz inicial
+
+- **Relacionado con:** `REQ-001-023`, `NFR-001-020`
+- **Given:** la base de componentes y la interfaz inicial construidas desde la
+  misma revisión;
+- **When:** se inspeccionan las dependencias visuales y se ejercita la interfaz
+  inicial;
+- **Then:** existen botón, selector de idioma, indicador de estado, mensaje o
+  alerta y primitivas de layout como componentes compartidos; todos consumen
+  los tokens compartidos y la interfaz inicial usa esos componentes cuando la
+  capacidad correspondiente está presente.
+- **Tipo de prueba esperada:** `INTEGRATION`
+- **Prueba relacionada:** `TEST-001-044`
+- **Estado de prueba:** `Pendiente de implementación`
+- **Evidencia final:** `Pendiente`
+
+### AC-001-045 — Matriz explícita de estados y ejemplos
+
+- **Relacionado con:** `REQ-001-024`, `NFR-001-020`
+- **Given:** todos los componentes mínimos y sus variantes documentadas;
+- **When:** se valida su matriz de estados y se ejecutan los ejemplos del
+  catálogo;
+- **Then:** cada componente y variante marca expresamente como aplicable o no
+  aplicable cada estado `default`, `hover`, `focus-visible`, `active`,
+  `disabled`, `loading`, `success`, `warning` y `error`, y existe un ejemplo
+  verificable para cada estado aplicable; una omisión implícita hace fallar la
+  validación.
+- **Tipo de prueba esperada:** `INTEGRATION`
+- **Prueba relacionada:** `TEST-001-045`
+- **Estado de prueba:** `Pendiente de implementación`
+- **Evidencia final:** `Pendiente`
+
+### AC-001-046 — Accesibilidad de componentes, variantes y estados
+
+- **Relacionado con:** `REQ-001-023`, `REQ-001-024`, `NFR-001-018`
+- **Given:** cada componente interactivo en todas sus variantes y estados
+  aplicables según `AC-001-045`;
+- **When:** se ejecutan la revisión automatizada aplicable y una revisión manual
+  dirigida mediante teclado;
+- **Then:** cada caso puede operarse por teclado, conserva el orden de foco
+  esperado y foco visible, expone semántica y nombre accesible correctos y
+  cumple el contraste aplicable de WCAG 2.2 AA, sin que el resultado de una
+  variante o estado se extrapole a los demás.
+- **Tipo de prueba esperada:** `ACCESSIBILITY`
+- **Prueba relacionada:** `TEST-001-046`
+- **Estado de prueba:** `Pendiente de implementación`
+- **Evidencia final:** `Pendiente`
+
+### AC-001-047 — Comportamiento responsive en breakpoints
+
+- **Relacionado con:** `REQ-001-022`, `REQ-001-023`, `REQ-001-024`,
+  `REQ-001-028`, `NFR-001-019`
+- **Given:** los breakpoints aprobados en `ui-design.md` y los componentes,
+  variantes y estados aplicables;
+- **When:** se ejercitan en cada breakpoint definido y en tamaños intermedios
+  representativos;
+- **Then:** no se pierde contenido, no existen solapamientos ni
+  desbordamientos que impidan el uso, se conserva la operabilidad y el orden de
+  foco no cambia de forma distinta a la documentada.
+- **Tipo de prueba esperada:** `E2E`
+- **Prueba relacionada:** `TEST-001-047`
+- **Estado de prueba:** `Pendiente de implementación`
+- **Evidencia final:** `Pendiente`
+
+### AC-001-048 — Consistencia del sistema visual entre navegadores
+
+- **Relacionado con:** `REQ-001-023`, `REQ-001-024`, `NFR-001-019`
+- **Given:** la matriz de navegadores ya definida por `NFR-001-011` y verificada
+  por `AC-001-028`, junto con los escenarios de componentes, estados y
+  breakpoints de `AC-001-045` a `AC-001-047`;
+- **When:** se ejecuta en esa misma matriz una selección representativa y
+  documentada de dichos escenarios;
+- **Then:** los componentes conservan contenido, jerarquía, semántica,
+  interacción, estados y comportamiento responsive equivalentes, y la
+  evidencia complementa la de `AC-001-028` sin redefinir navegadores o
+  versiones soportadas.
+- **Tipo de prueba esperada:** `E2E`
+- **Prueba relacionada:** `TEST-001-048`
+- **Estado de prueba:** `Pendiente de implementación`
+- **Evidencia final:** `Pendiente`
+
+### AC-001-049 — Catálogo ejecutable, completo y validado
+
+- **Relacionado con:** `REQ-001-025`, `NFR-001-020`
+- **Given:** un checkout limpio y la misma revisión del sistema visual y sus
+  componentes;
+- **When:** se inicia el catálogo mediante el procedimiento local documentado y
+  se ejecuta su validación equivalente en CI;
+- **Then:** el catálogo está disponible localmente, su validación pasa en CI,
+  declara su versión y contiene todas las categorías de tokens, componentes
+  mínimos, variantes, matrices de estados y ejemplos permitidos; todas sus
+  referencias resuelven a contratos existentes y no contiene navegación,
+  journeys ni datos de negocio.
+- **Tipo de prueba esperada:** `INTEGRATION`
+- **Prueba relacionada:** `TEST-001-049`
+- **Estado de prueba:** `Pendiente de implementación`
+- **Evidencia final:** `Pendiente`
+
+### AC-001-050 — Duplicación y excepciones del sistema compartido
+
+- **Relacionado con:** `REQ-001-026`
+- **Given:** el inventario de tokens, componentes, estilos y capacidades
+  compartidas, una duplicación detectable mecánicamente, una duplicación
+  conceptual o de interacción y una excepción candidata;
+- **When:** se ejecuta el control automatizado de definiciones prohibidas,
+  imports, tokens o primitivas paralelas y se realiza la revisión estructural
+  documentada;
+- **Then:** las duplicaciones detectables mecánicamente hacen fallar el control
+  automatizado; las duplicaciones conceptuales o de interacción requieren una
+  revisión estructural documentada; y una excepción solo se acepta si registra
+  necesidad, justificación, alcance y criterio para eliminarla o incorporarla
+  al sistema compartido.
+- **Tipo de prueba esperada:** `INTEGRATION`
+- **Prueba relacionada:** `TEST-001-050`
+- **Estado de prueba:** `Pendiente de implementación`
+- **Evidencia final:** `Pendiente`
+
+### AC-001-051 — Regresión visual reproducible y revisada
+
+- **Relacionado con:** `REQ-001-027`, `NFR-001-021`
+- **Given:** baselines visuales versionados y vinculados a una revisión de
+  código, con cobertura declarada de componentes, variantes, estados y
+  breakpoints aplicables;
+- **When:** se ejecuta dos veces el procedimiento reproducible y se introduce
+  una diferencia visual controlada;
+- **Then:** las ejecuciones sin cambios producen resultados consistentes, la
+  diferencia controlada es detectada, todo cambio esperado requiere revisión
+  explícita y la evidencia conserva el vínculo con la revisión de código; una
+  actualización del baseline sin esa revisión hace fallar el control.
+- **Tipo de prueba esperada:** `E2E`
+- **Prueba relacionada:** `TEST-001-051`
+- **Estado de prueba:** `Pendiente de implementación`
+- **Evidencia final:** `Pendiente`
+
+### AC-001-052 — La coincidencia visual no oculta otros fallos
+
+- **Relacionado con:** `REQ-001-027`, `NFR-001-018`, `NFR-001-021`
+- **Given:** un componente cuya captura coincide con el baseline y fallos
+  controlados independientes de comportamiento funcional, operación por
+  teclado y accesibilidad;
+- **When:** se ejecutan conjuntamente la regresión visual y las verificaciones
+  funcionales y de accesibilidad;
+- **Then:** cada fallo no visual hace que la verificación global resulte no
+  satisfactoria, aunque la comparación visual pase, y la evidencia informa por
+  separado los resultados visuales, funcionales, de teclado y de accesibilidad.
+- **Tipo de prueba esperada:** `E2E`
+- **Prueba relacionada:** `TEST-001-052`
+- **Estado de prueba:** `Pendiente de implementación`
+- **Evidencia final:** `Pendiente`
+
 ## Matriz de trazabilidad
 
 | Criterio AC-* | Requisito o NFR | Prueba | Estado | Evidencia |
@@ -641,13 +828,37 @@ Referencia: `SPEC-001`
 | `AC-001-039` | `REQ-001-020`, `NFR-001-016` | `TEST-001-039` | Pendiente de implementación | Pendiente |
 | `AC-001-040` | `REQ-001-021` | `TEST-001-040` | Pendiente de implementación | Pendiente |
 | `AC-001-041` | `REQ-001-019`, `NFR-001-017` | `TEST-001-041` | Pendiente de implementación | Pendiente |
+| `AC-001-042` | `REQ-001-028` | `TEST-001-042` | Pendiente de implementación | Pendiente |
+| `AC-001-043` | `REQ-001-022`, `REQ-001-028`, `NFR-001-020` | `TEST-001-043` | Pendiente de implementación | Pendiente |
+| `AC-001-044` | `REQ-001-023`, `NFR-001-020` | `TEST-001-044` | Pendiente de implementación | Pendiente |
+| `AC-001-045` | `REQ-001-024`, `NFR-001-020` | `TEST-001-045` | Pendiente de implementación | Pendiente |
+| `AC-001-046` | `REQ-001-023`, `REQ-001-024`, `NFR-001-018` | `TEST-001-046` | Pendiente de implementación | Pendiente |
+| `AC-001-047` | `REQ-001-022`, `REQ-001-023`, `REQ-001-024`, `REQ-001-028`, `NFR-001-019` | `TEST-001-047` | Pendiente de implementación | Pendiente |
+| `AC-001-048` | `REQ-001-023`, `REQ-001-024`, `NFR-001-019` | `TEST-001-048` | Pendiente de implementación | Pendiente |
+| `AC-001-049` | `REQ-001-025`, `NFR-001-020` | `TEST-001-049` | Pendiente de implementación | Pendiente |
+| `AC-001-050` | `REQ-001-026` | `TEST-001-050` | Pendiente de implementación | Pendiente |
+| `AC-001-051` | `REQ-001-027`, `NFR-001-021` | `TEST-001-051` | Pendiente de implementación | Pendiente |
+| `AC-001-052` | `REQ-001-027`, `NFR-001-018`, `NFR-001-021` | `TEST-001-052` | Pendiente de implementación | Pendiente |
+
+## Control de cambios
+
+- `AC-001-001` a `AC-001-041` fueron aprobados por Product Owner el
+  `2026-09-19`.
+- `acceptance.md` fue reabierto el `2026-09-20` para cubrir los requisitos del
+  sistema de diseño incorporados a `SPEC-001`.
+- Esta reapertura no constituye aprobación de `AC-001-042` a `AC-001-052` ni
+  reaprobación del conjunto actualizado de criterios.
+- El conjunto actualizado de criterios `AC-001-001` a `AC-001-052` fue
+  reaprobado explícitamente por Product Owner el `2026-09-20` después de
+  incorporar el sistema de diseño.
 
 ## Aprobación de criterios de aceptación
 
 - **Estado:** `Aprobado`
 - **Aprobado por:** `Product Owner`
-- **Fecha:** `2026-09-19`
-- **Comentario o referencia:** `Aprobación explícita de los criterios de aceptación de SPEC-001 durante la revisión SDD.`
+- **Fecha:** `2026-09-20`
+- **Comentario o referencia:** Reaprobación explícita de los criterios de
+  aceptación de SPEC-001 después de incorporar el sistema de diseño.
 
 La existencia de este archivo no constituye aprobación. Todos los criterios
 `AC-*` deben ser verificables.
