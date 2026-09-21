@@ -7,7 +7,7 @@
 - **Estado:** `Approved`
 - **Responsable:** `Product Owner`
 - **Fecha:** `2026-09-20`
-- **Última actualización:** `2026-09-20`
+- **Última actualización:** `2026-09-21`
 
 Los valores concretos de este documento pertenecen a la versión aprobada
 `1.0.0`. La dirección visual, los tokens, los componentes y las reglas fueron
@@ -88,7 +88,7 @@ de frameworks, librerías, herramientas y proveedores.
 
 ## Tokens de color
 
-Todos los valores son hexadecimales concretos del draft `1.0.0-draft`. Los
+Todos los valores son hexadecimales concretos de la versión aprobada `1.0.0`. Los
 nombres son semánticos y no exponen referencias a sistemas externos.
 
 ### Superficies, navegación y texto
