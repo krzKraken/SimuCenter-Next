@@ -1,13 +1,92 @@
 openapi: 3.1.0
 info:
   title: SimuCenter Platform Foundation API
-  version: 1.0.0
+  version: 1.1.0
   description: >-
-    Contrato HTTP aprobado de SPEC-001 Platform Foundation. Documenta
-    únicamente las comprobaciones de vida y readiness aprobadas. Las rutas
-    /health y /ready fueron seleccionadas porque los requisitos aprobados no
-    fijaban nombres de ruta. No documenta autenticación, tenancy, operaciones
-    de negocio, persistencia ni un transporte HTTP para métricas.
+    Contrato HTTP de SPEC-001 Platform Foundation. Documenta únicamente las
+    comprobaciones de vida y readiness aprobadas. Las rutas /health y /ready
+    fueron seleccionadas porque los requisitos aprobados no fijaban nombres de
+    ruta. No documenta autenticación, tenancy, operaciones de negocio,
+    persistencia ni un transporte HTTP para métricas.
+
+
+    La versión 1.1.0 no añade rutas, métodos ni capacidades. Incorpora
+    exclusivamente las respuestas que el límite HTTP de la foundation emite de
+    forma deliberada y configurada sobre estas mismas rutas: vencimiento del
+    plazo de recepción de una solicitud ya encaminada (408), rechazo por
+    frecuencia o capacidad de admisión (429), rechazo por tamaño de cuerpo
+    (413), denegación de acceso operacional (403) cuando el límite de red o
+    plataforma materializa esa denegación como respuesta HTTP en lugar de
+    impedir la conexión, fallo upstream detectado por el borde antes de recibir
+    encabezados válidos del upstream y antes de comprometer encabezados de
+    respuesta downstream (502) y vencimiento de un plazo de upstream que el
+    borde traduce al código contratado (504).
+    La versión 1.0.0 no las documentaba, lo que impedía que AC-001-030 y
+    SEC-001-028 verificaran el contrato completo de cada operación.
+
+
+    Procedencia de estas respuestas. Una prueba de viabilidad aislada del
+    límite HTTP, con un upstream exclusivamente sintético y sin implementación
+    de SPEC-001, observó directamente 403, 408, 413, 429, 502 y 504, la
+    conservación exacta del X-Request-ID válido recibido y su sustitución
+    íntegra cuando es inválido, y el paso sin alteración del 503 {status:
+    not_ready} producido por el backend. El 502 se observó exclusivamente en su
+    causa UF —fallo o timeout de conexión—, y el 504 en sus causas UT
+    —vencimiento del plazo upstream total— y SI —vencimiento de la ociosidad
+    del flujo—. Esa prueba no es implementación del producto ni evidencia de
+    conformidad de SPEC-001, y su evidencia no se extiende a la implementación
+    futura. No fueron ejercitados y son comportamiento contratado pendiente de
+    verificación de implementación: el 200 de /ready, el 500 INTERNAL_ERROR, y
+    las causas UC y UR que esta versión agrupa en 502 junto a UF.
+
+
+    Todas las respuestas no satisfactorias de esta versión reutilizan el
+    esquema cerrado ErrorResponse, incluyen un X-Request-ID válido y
+    obligatorio, y usan códigos públicos estables con mensajes seguros que no
+    revelan límites configurados, dependencias, reglas de acceso, configuración
+    ni detalles internos. El 503 de readiness conserva su cuerpo mínimo
+    {status: not_ready} porque es el resultado normal y no satisfactorio de una
+    comprobación procesada, no una respuesta de error de API bajo REQ-001-007.
+
+
+    Taxonomía cerrada de resultados no satisfactorios: 408 exclusivamente para
+    el vencimiento del plazo de recepción de una solicitud que el límite ya
+    encaminó a una operación contratada; 429 exclusivamente para límites de
+    frecuencia o admisión; 413 para exceso del cuerpo; 403 para acceso
+    operacional denegado materializado como HTTP; 503 {status: not_ready}
+    exclusivamente para la dependencia obligatoria de readiness; 502 para los
+    fallos upstream detectados por el borde antes de recibir encabezados
+    válidos del upstream y antes de comprometer encabezados de respuesta
+    downstream; 504 exclusivamente para los
+    vencimientos de plazo de upstream que el límite traduce a ese código; y 500
+    INTERNAL_ERROR exclusivamente para excepción interna no controlada.
+    Ninguna condición se representa con un código
+    distinto del suyo. Un cierre de conexión anterior a la emisión de una
+    respuesta no produce ningún estado HTTP y no se documenta como código
+    alguno; una respuesta cuyos encabezados ya se entregaron y después se
+    interrumpe conserva el estado ya emitido y llega con el cuerpo incompleto,
+    y tampoco se documenta con un código distinto.
+
+
+    Compromiso semántico declarado del 502. UF —fallo o timeout de conexión—,
+    UC —terminación de la conexión upstream antes de encabezados— y UR —reset
+    upstream antes de encabezados— son indicadores distintos y pueden
+    distinguirse individualmente. El contrato los agrupa deliberadamente bajo
+    el mismo 502 UPSTREAM_UNAVAILABLE cuando ocurren antes de recibir
+    encabezados válidos del upstream y antes de comprometer encabezados de
+    respuesta downstream. Cada indicador se remapea explícitamente por
+    separado. La respuesta pública comparte código y cuerpo, mientras el flag y
+    el detalle operacional conservan la causa concreta. Ambas condiciones deben
+    cumplirse para que el borde pueda generar el 502 contratado: si el upstream
+    ya entregó encabezados o el borde ya comprometió encabezados de respuesta
+    downstream, el fallo posterior se trata como transporte y no puede
+    convertirse en 502. Solo UF fue observada en la prueba de viabilidad; UC y
+    UR son comportamiento contratado y quedan pendientes de verificación de
+    implementación. El diagnóstico operacional del límite registra la causa
+    concreta por solicitud y la contabiliza en contadores separados de timeout
+    de conexión, de fallo de conexión y de terminación o reset anteriores a
+    encabezados. Representar cualquiera de estas causas como 504 queda
+    excluido: afirmaría un vencimiento de plazo que no ocurrió.
 servers: []
 tags:
   - name: Operations
@@ -17,10 +96,35 @@ x-contract-status: approved
 x-approval:
   status: approved
   approved-by: Product Owner
-  date: '2026-09-20'
+  date: '2026-09-25'
   reference: >-
-    Aprobación explícita del contrato OpenAPI 1.0.0 de SPEC-001 Platform
-    Foundation durante la revisión SDD.
+    Aprobación explícita del Product Owner del 2026-09-25 del contrato OpenAPI
+    1.1.0 de SPEC-001 Platform Foundation.
+x-approval-history:
+  - version: 1.0.0
+    status: approved
+    approved-by: Product Owner
+    date: '2026-09-20'
+    reference: >-
+      Aprobación explícita del contrato OpenAPI 1.0.0 de SPEC-001 Platform
+      Foundation durante la revisión SDD.
+  - version: 1.1.0
+    status: approved
+    approved-by: Product Owner
+    date: '2026-09-25'
+    reference: >-
+      Aprobación explícita del Product Owner del 2026-09-25 del contrato OpenAPI
+      1.1.0 de SPEC-001 Platform Foundation.
+    reopened-on: '2026-09-21'
+    reopened-reason: >-
+      Revisión independiente del borrador de plan.md: el contrato 1.0.0 no
+      documentaba las respuestas deliberadamente configuradas del límite HTTP
+      sobre las rutas contratadas. La aprobación de 1.0.0 no se extiende a esta
+      versión. Ampliado el 2026-09-21 con 408 REQUEST_TIMEOUT y 502
+      UPSTREAM_UNAVAILABLE, y con la delimitación de 504 a los vencimientos de
+      plazo de upstream, tras una prueba de viabilidad aislada del límite HTTP
+      sobre un upstream sintético. Esa ampliación permaneció pendiente de
+      reaprobación explícita hasta el 2026-09-25.
 x-traceability:
   requirements:
     - REQ-001-005
@@ -38,11 +142,13 @@ x-traceability:
     - AC-001-015
     - AC-001-016
     - AC-001-030
+    - AC-001-039
   security-controls:
     - SEC-001-003
     - SEC-001-004
     - SEC-001-005
     - SEC-001-006
+    - SEC-001-015
     - SEC-001-028
     - SEC-001-029
 paths:
@@ -53,8 +159,31 @@ paths:
       summary: Comprobar que el proceso está vivo
       description: >-
         Devuelve únicamente la vida del proceso. Esta operación no consulta,
-        enumera ni expone dependencias, configuración o detalles internos. Una
-        respuesta satisfactoria no demuestra readiness ni capacidad de negocio.
+        enumera ni expone dependencias, configuración o detalles internos. No
+        entra en comprobaciones de dependencias ni en ninguna cola de trabajo
+        de negocio. Una respuesta satisfactoria no demuestra readiness ni
+        capacidad de negocio.
+
+
+        Es la única operación que el plan puede exponer públicamente, y solo
+        conservando esta respuesta mínima, conforme a SEC-001-004 y
+        SEC-001-029. Un rechazo deliberado por frecuencia o por capacidad de
+        admisión agotada usa 429; un rechazo por exceder el presupuesto del
+        cuerpo usa 413. Ninguno de los dos es un error interno, y 500 queda
+        reservado a excepciones internas no controladas: no representa
+        saturación, admisión agotada ni vencimiento de un deadline. Si el
+        límite ya encaminó la solicitud a esta operación y el cliente no
+        termina de enviarla dentro del plazo de recepción configurado, el
+        límite emite 408 sin contactar al backend. Si el límite detecta un
+        fallo upstream antes de recibir encabezados válidos del upstream y
+        antes de comprometer encabezados de respuesta downstream, emite 502. Si
+        vence el plazo upstream total configurado y todavía puede emitirse una
+        respuesta completa, o si vence la ociosidad del flujo antes de
+        comprometer encabezados, el límite emite 504; ese plazo cubre desde el
+        fin de la solicitud downstream hasta procesar completamente la
+        respuesta upstream, de modo que un 504 no demuestra por sí solo que el
+        deadline interno de la aplicación haya vencido. Ninguno de los dos
+        informa de dependencia alguna.
       operationId: getProcessHealth
       x-route-selection: approved-contract
       x-access-classification: probe-or-operator
@@ -74,10 +203,12 @@ paths:
           - AC-001-015
           - AC-001-016
           - AC-001-030
+          - AC-001-039
         security-controls:
           - SEC-001-003
           - SEC-001-004
           - SEC-001-006
+          - SEC-001-015
           - SEC-001-028
           - SEC-001-029
       parameters:
@@ -85,8 +216,18 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/HealthAlive'
+        '408':
+          $ref: '#/components/responses/RequestTimeout'
+        '413':
+          $ref: '#/components/responses/RequestTooLarge'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/UpstreamUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
   /ready:
     get:
       tags:
@@ -96,7 +237,42 @@ paths:
         Devuelve si la aplicación y sus dependencias obligatorias están listas
         para atender tráfico. La respuesta nunca enumera dependencias ni expone
         nombres, direcciones, causas, configuración o detalles internos.
-        Readiness es una superficie operacional y no se declara pública.
+        Readiness es una superficie operacional, deny by default, y no se
+        declara pública.
+
+
+        Esta operación existe únicamente en la entrada operacional del límite
+        HTTP. La entrada pública no la sirve: no figura en su mapa de rutas, de
+        modo que una solicitud de /ready dirigida a la entrada pública obtiene
+        una respuesta de ausencia de ruta de esa entrada y no invoca esta
+        operación. Ninguna de las respuestas documentadas aquí describe ese
+        caso, que pertenece a la entrada pública y no a este contrato de
+        operación.
+
+
+        La indisponibilidad, la saturación o el timeout de una dependencia
+        obligatoria de readiness se expresan con el 503 existente y su cuerpo
+        mínimo {status: not_ready}; no se representan con 500. Un acceso no
+        autorizado usa 403 cuando el límite de red o plataforma materializa la
+        denegación como respuesta HTTP en lugar de impedir la conexión; el
+        comportamiento por defecto sigue siendo que el cliente no autorizado no
+        alcance esta operación. Un rechazo deliberado por frecuencia o por
+        capacidad de admisión agotada usa 429 y un rechazo por exceder el
+        presupuesto del cuerpo usa 413. Si el límite ya encaminó la solicitud a
+        esta operación y el cliente no termina de enviarla dentro del plazo de
+        recepción configurado, el límite emite 408 sin contactar al backend.
+        Una excepción interna no controlada usa 500; la indisponibilidad,
+        saturación o timeout de la dependencia obligatoria de readiness nunca
+        se representa con 500, sino con 503. Si el límite detecta un fallo
+        upstream antes de recibir encabezados válidos del upstream y antes de
+        comprometer encabezados de respuesta downstream, emite 502. Si vence el
+        plazo upstream total configurado y todavía puede emitirse una respuesta
+        completa, o si vence la ociosidad del flujo antes de comprometer
+        encabezados, el límite emite 504; ese plazo cubre desde el fin de la
+        solicitud downstream hasta procesar completamente la respuesta
+        upstream, de modo que un 504 no demuestra por sí solo que el deadline
+        interno de la aplicación haya vencido. Ni 408, ni 502, ni 504 informan
+        del estado de readiness ni de dependencia alguna.
       operationId: getApplicationReadiness
       x-route-selection: approved-contract
       x-access-classification: operational
@@ -117,10 +293,12 @@ paths:
           - AC-001-015
           - AC-001-016
           - AC-001-030
+          - AC-001-039
         security-controls:
           - SEC-001-003
           - SEC-001-005
           - SEC-001-006
+          - SEC-001-015
           - SEC-001-028
           - SEC-001-029
       parameters:
@@ -128,10 +306,22 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/ReadinessReady'
-        '503':
-          $ref: '#/components/responses/ReadinessNotReady'
+        '403':
+          $ref: '#/components/responses/AccessDenied'
+        '408':
+          $ref: '#/components/responses/RequestTimeout'
+        '413':
+          $ref: '#/components/responses/RequestTooLarge'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/UpstreamUnavailable'
+        '503':
+          $ref: '#/components/responses/ReadinessNotReady'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
 components:
   schemas:
     ValidRequestId:
@@ -146,11 +336,17 @@ components:
     IncomingRequestId:
       type: string
       description: >-
-        Valor candidato recibido en X-Request-ID. El backend decide si cumple
-        el esquema ValidRequestId. Si está ausente o no lo cumple, lo descarta
-        completamente y genera un identificador válido; no lo trunca ni lo
-        normaliza. Su ausencia o invalidez no produce por sí sola una respuesta
-        400.
+        Valor candidato recibido en X-Request-ID. Cuando existe el límite HTTP,
+        este evalúa primero el candidato contra la regla de ValidRequestId; en
+        acceso directo al backend, sin ese límite delante, el middleware de
+        aplicación aplica exactamente la misma regla. Un valor válido se
+        conserva carácter a carácter. Uno ausente o inválido se descarta
+        completo y se sustituye por un identificador válido generado. Nunca se
+        trunca ni se normaliza el valor recibido. La cabecera repetida llega al
+        adaptador probado con sus valores unidos por coma: la coma no pertenece
+        a ValidRequestId, de modo que el candidato queda inválido y se descarta
+        completo, sin elegir uno de los valores ni conservar un fragmento. Su
+        ausencia o invalidez no produce por sí sola una respuesta 400.
       example: synthetic-candidate-request-id
     HealthResponse:
       type: object
@@ -215,8 +411,17 @@ components:
       required: false
       description: >-
         Request ID opcional. Un valor válido se devuelve sin cambios. Un valor
-        ausente o inválido se descarta completo y el backend lo reemplaza por
-        uno generado; nunca se trunca ni normaliza el valor recibido.
+        ausente o inválido se descarta completo y se reemplaza por uno
+        generado; nunca se trunca ni normaliza el valor recibido. El
+        identificador puede generarlo el backend o el límite HTTP situado
+        delante de él, sin que esa procedencia altere ninguna de las dos
+        garantías anteriores: un valor que cumple ValidRequestId se conserva
+        exactamente, carácter a carácter, y un valor que no lo cumple se
+        descarta entero. El caso de la cabecera repetida se resuelve por esa
+        misma regla: el límite entrega los valores repetidos unidos por coma,
+        la coma no pertenece a ValidRequestId y el candidato completo queda
+        descartado, de modo que se genera un identificador válido en su lugar.
+        No se elige uno de los valores ni se conserva un fragmento.
       schema:
         $ref: '#/components/schemas/IncomingRequestId'
       example: synthetic-request-001
@@ -224,8 +429,13 @@ components:
     RequestId:
       description: >-
         Request ID válido y obligatorio de la respuesta. Coincide sin cambios
-        con el valor válido recibido o contiene el valor generado por el backend
-        cuando la solicitud no proporciona uno aceptable.
+        con el valor válido recibido o contiene el valor generado por el
+        backend o por el límite HTTP cuando la solicitud no proporciona uno
+        aceptable. Las respuestas que el límite emite sin contactar al backend
+        —403, 408, 413, 429, 502 y 504— llevan necesariamente un identificador
+        de esa procedencia, y en ellas el valor de esta cabecera y el del campo
+        request_id del cuerpo son el mismo. La procedencia no relaja la
+        conservación exacta del identificador válido recibido.
       required: true
       schema:
         $ref: '#/components/schemas/ValidRequestId'
@@ -266,7 +476,9 @@ components:
         procesada correctamente; este resultado no representa una respuesta de
         error de API bajo REQ-001-007. Por eso usa el cuerpo mínimo
         {status: not_ready} y no ErrorResponse, sin exponer causas ni detalles
-        de dependencias.
+        de dependencias. Cubre el inicio, el cierre y la indisponibilidad, la
+        saturación o el timeout de una dependencia obligatoria de readiness;
+        ninguno de esos casos se representa con 500.
       headers:
         X-Request-ID:
           $ref: '#/components/headers/RequestId'
@@ -279,8 +491,198 @@ components:
               summary: Ejemplo sintético no productivo
               value:
                 status: not_ready
+    AccessDenied:
+      description: >-
+        Acceso denegado por la política operacional deny by default, emitido
+        cuando el límite de red o plataforma materializa la denegación como una
+        respuesta HTTP. No indica si la aplicación está lista, no enumera ni
+        nombra dependencias, no revela qué regla denegó el acceso, qué contexto
+        sería aceptable ni ningún detalle de configuración o topología. Una
+        denegación resuelta antes de HTTP no produce esta respuesta.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            synthetic-non-production:
+              summary: Ejemplo sintético no productivo
+              value:
+                code: ACCESS_DENIED
+                message: Access denied.
+                request_id: synthetic-request-001
+    RequestTimeout:
+      description: >-
+        El límite HTTP ya había encaminado la solicitud a esta operación y el
+        cliente no terminó de enviarla dentro del plazo de recepción
+        configurado. Es un vencimiento del lado de la recepción, no un rechazo
+        deliberado de frecuencia o admisión (429), no un exceso del presupuesto
+        del cuerpo (413) y no un fallo ni un vencimiento de upstream (502,
+        504): el límite no llega a contactar al backend, de modo que esta
+        respuesta no informa de nada sobre la aplicación, su readiness ni sus
+        dependencias. Se documenta como respuesta de la operación, y no como
+        política de transporte, porque el límite ya había resuelto la ruta y el
+        destino cuando el plazo venció. No revela el valor del plazo, qué parte
+        de la solicitud faltaba ni ningún valor de configuración. Si el plazo
+        de recepción no se configura, esta respuesta no puede producirse.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            synthetic-non-production:
+              summary: Ejemplo sintético no productivo
+              value:
+                code: REQUEST_TIMEOUT
+                message: Request timeout.
+                request_id: synthetic-request-001
+    UpstreamUnavailable:
+      description: >-
+        Fallo upstream detectado por el borde antes de recibir encabezados
+        válidos del upstream y antes de comprometer encabezados de respuesta
+        downstream, y lo emite el límite, no la aplicación. Ambas condiciones
+        deben cumplirse para que el borde pueda generar este 502 contratado: si
+        el upstream ya entregó encabezados o el borde ya comprometió
+        encabezados de respuesta downstream, el fallo posterior se trata como
+        transporte y no puede convertirse en 502. Comprende exactamente tres
+        causas: UF, fallo o timeout de conexión; UC, terminación de la conexión
+        upstream antes de encabezados; y UR, reset upstream antes de
+        encabezados. UF, UC y UR son indicadores distintos y pueden
+        distinguirse individualmente; el contrato los agrupa deliberadamente
+        bajo este mismo código cuando ocurren dentro de esa ventana, y cada
+        indicador se remapea explícitamente por separado. La respuesta pública
+        comparte código y cuerpo, mientras el flag y el detalle operacional
+        conservan la causa concreta, que el límite registra por solicitud y
+        contabiliza en contadores separados. Solo UF fue observada en la prueba
+        de viabilidad aislada del límite; UC y UR son comportamiento contratado
+        y quedan pendientes de verificación de implementación. No se representa
+        con 504, que queda reservado a los vencimientos de plazo de upstream,
+        ni con 503, reservado a la dependencia obligatoria de readiness, ni con
+        500, reservado a excepción interna no controlada. No revela la
+        identidad, la dirección ni el estado del upstream, no indica si la
+        aplicación está lista y no nombra dependencia alguna.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            synthetic-non-production:
+              summary: Ejemplo sintético no productivo
+              value:
+                code: UPSTREAM_UNAVAILABLE
+                message: Upstream unavailable.
+                request_id: synthetic-request-001
+    RequestTooLarge:
+      description: >-
+        Rechazo deliberado y verificable por exceder el presupuesto configurado
+        del cuerpo de la solicitud. No es un error interno ni una saturación.
+        Solo cubre el tamaño del cuerpo: el exceso de la línea de solicitud, del
+        URI o del bloque de cabeceras se resuelve como política de transporte
+        del límite HTTP y no se representa con este código. Un cuerpo inesperado
+        en GET que no excede el presupuesto no produce esta respuesta: se
+        consume y se descarta, y la operación responde normalmente. No revela el
+        límite configurado, su unidad, qué parte de la solicitud lo excedió ni
+        ningún valor de configuración.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            synthetic-non-production:
+              summary: Ejemplo sintético no productivo
+              value:
+                code: REQUEST_TOO_LARGE
+                message: Request too large.
+                request_id: synthetic-request-001
+    TooManyRequests:
+      description: >-
+        Rechazo deliberado y contabilizado por exceder una frecuencia
+        configurada o por agotarse la capacidad de admisión. Es un fallo
+        acotado y observable, nunca un éxito falso ni un error interno. No
+        revela la tasa configurada, la ventana, la clave de origen evaluada, el
+        estado del limitador ni la capacidad restante, y no incluye cabeceras
+        que permitan inferirlos.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            synthetic-non-production:
+              summary: Ejemplo sintético no productivo
+              value:
+                code: RATE_LIMITED
+                message: Too many requests.
+                request_id: synthetic-request-001
+    GatewayTimeout:
+      description: >-
+        Respuesta generada por el borde, no por la aplicación, en dos
+        situaciones: cuando vence el plazo upstream total configurado y todavía
+        puede emitirse una respuesta completa, o cuando vence la ociosidad del
+        flujo antes de comprometer encabezados de respuesta downstream y el
+        borde la traduce a este 504 contratado. Esas son sus dos causas: UT, el
+        vencimiento del plazo upstream total, y SI, el vencimiento de la
+        ociosidad del flujo. Ambas fueron observadas en la prueba de viabilidad
+        aislada del límite, y esa evidencia no se extiende a la implementación
+        futura. El plazo upstream total cubre desde el fin de la solicitud
+        downstream hasta procesar completamente la respuesta upstream —conexión,
+        envío, procesamiento y lectura íntegra—; por ello, un 504 no demuestra
+        por sí solo que el deadline interno de la aplicación haya vencido. No
+        cubre el fallo upstream anterior a los encabezados, que usa 502; no es
+        un rechazo deliberado de frecuencia o admisión (429), ni un vencimiento
+        de la recepción de la solicitud (408), ni una dependencia obligatoria
+        de readiness no lista (503), ni una excepción interna no controlada
+        (500). No revela el valor del plazo, cuál de las dos causas venció, la
+        identidad ni el estado del upstream, y no indica si la aplicación está
+        lista. Si la conexión se cierra antes de que el límite pueda emitir una
+        respuesta, no existe ningún estado HTTP: ese caso es un fallo de
+        transporte y no se representa con este código ni con ningún otro. Si
+        los encabezados de respuesta ya se comprometieron y la transmisión se
+        interrumpe después, el estado ya emitido no puede sustituirse: el
+        cliente recibe ese estado con un cuerpo incompleto, y tampoco es este
+        código.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            synthetic-non-production:
+              summary: Ejemplo sintético no productivo
+              value:
+                code: GATEWAY_TIMEOUT
+                message: Upstream timeout.
+                request_id: synthetic-request-001
     InternalServerError:
-      description: Error interno sanitizado sin detalles de implementación.
+      description: >-
+        Error interno sanitizado sin detalles de implementación. Se reserva
+        exclusivamente a excepciones internas no controladas, es decir, a un
+        defecto del proceso que ninguna regla de admisión, de tamaño, de acceso
+        ni de readiness clasifica. No es la representación de saturación, de
+        admisión agotada, de vencimiento de un deadline ni de una dependencia
+        obligatoria de readiness no disponible o expirada: esos casos usan 429
+        para saturación y admisión, 408 para el vencimiento de la recepción de
+        la solicitud, 502 para el fallo upstream anterior a los encabezados,
+        504 para el vencimiento de un plazo de upstream y 503 para la
+        dependencia obligatoria de readiness. Una condición cuya causa no pueda
+        clasificarse
+        dentro de esta taxonomía no se representa con 500: exige una decisión
+        contractual explícita antes de implementarse.
       headers:
         X-Request-ID:
           $ref: '#/components/headers/RequestId'

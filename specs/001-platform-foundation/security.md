@@ -360,6 +360,14 @@ como logs ni métricas y no heredan sus reglas de acceso o retención.
 | `SEC-TEST-001-026` | Introducir HTML o SVG activo, o un recurso externo no autorizado, que intenta ejecutar código o transmitir información: el contenido se rechaza o neutraliza, no se produce ejecución ni transmisión y el control falla. | `SEC-001-034` | `REQ-001-022`, `REQ-001-023`, `REQ-001-024`, `REQ-001-025`; `NFR-001-018`, `NFR-001-019`, `NFR-001-020`; `AC-001-043`, `AC-001-044`, `AC-001-045`, `AC-001-046`, `AC-001-047`, `AC-001-048`, `AC-001-049` |
 | `SEC-TEST-001-027` | Mantener una captura coincidente con el baseline mientras existe un fallo de seguridad, o intentar actualizar, publicar o promover un baseline sin revisión vinculada: el resultado global falla y la actualización o promoción se deniega. | `SEC-001-023`, `SEC-001-035` | `REQ-001-027`; `NFR-001-018`, `NFR-001-021`; `AC-001-046`, `AC-001-051`, `AC-001-052` |
 | `SEC-TEST-001-028` | Introducir una divergencia respecto de `ui-design.md` aprobado o una excepción de reutilización sin necesidad, justificación, alcance o criterio de eliminación/incorporación: la comprobación mecánica aplicable o la revisión estructural documentada rechaza el cambio. | `SEC-001-036` | `REQ-001-022`, `REQ-001-023`, `REQ-001-024`, `REQ-001-025`, `REQ-001-026`, `REQ-001-027`, `REQ-001-028`; `NFR-001-018`, `NFR-001-019`, `NFR-001-020`, `NFR-001-021`; `AC-001-042`, `AC-001-043`, `AC-001-044`, `AC-001-045`, `AC-001-046`, `AC-001-047`, `AC-001-048`, `AC-001-049`, `AC-001-050`, `AC-001-051`, `AC-001-052` |
+| `SEC-TEST-001-029` | Presentar una dependencia, acción de CI, imagen, dependencia UI, addon, fuente, icono u otro recurso visual que (a) no figure en el inventario, (b) declare una procedencia ausente o no verificable, (c) use una versión o referencia flotante donde el flujo de entrega exige fijación inmutable verificable, o (d) se haya actualizado sin la revisión requerida: cada caso hace fallar el gate correspondiente y bloquea la entrega. No se admite aceptación implícita ni excepción por tratarse de una herramienta de desarrollo, prueba o catálogo. | `SEC-001-021` | `REQ-001-010`, `REQ-001-014`, `REQ-001-022`, `REQ-001-023`, `REQ-001-025`; `NFR-001-002`, `NFR-001-008`, `NFR-001-009`, `NFR-001-020`; `AC-001-020`, `AC-001-029`, `AC-001-032`, `AC-001-043`, `AC-001-044`, `AC-001-049` |
+
+`SEC-TEST-001-029` se incorporó el `2026-09-21` para cerrar la única brecha de
+cobertura detectada: antes de esta versión, `SEC-001-021` era el único control
+sin prueba negativa asociada. `SEC-TEST-001-014` conserva su alcance original de
+vulnerabilidad crítica o alta explotable sobre `SEC-001-022`, y
+`SEC-TEST-001-019` conserva el suyo de integridad y vínculo de artefactos sobre
+`SEC-001-023`. Ninguna prueba existente amplía su mapeo de controles.
 
 ## Referencias ASVS
 
@@ -415,14 +423,38 @@ riesgo alto o crítico no puede considerarse aceptado por defecto.
   no constituye por sí misma esa reaprobación.
 - El diseño de seguridad actualizado fue reaprobado explícitamente por Product
   Owner el `2026-09-20` después de incorporar el sistema de diseño.
+- `security.md` fue reabierto el `2026-09-21` por una brecha de cobertura
+  detectada durante la revisión independiente del borrador de `plan.md`: la
+  matriz de pruebas negativas no cubría `SEC-001-021`, de modo que el control
+  de inventario, procedencia, fijación inmutable y revisión de actualizaciones
+  carecía de prueba negativa. El borrador de `plan.md` había compensado esa
+  brecha añadiendo `SEC-001-021` a `SEC-TEST-001-014` y `SEC-TEST-001-019`, lo
+  que alteraba este documento aprobado sin control de cambios; esa alteración
+  se revirtió y la brecha se corrige aquí, en su fuente normativa.
+- La corrección del `2026-09-21` se limita a incorporar `SEC-TEST-001-029` y a
+  registrar este control de cambios. No modifica activos, datos sensibles,
+  trust boundaries, amenazas `THREAT-*`, controles `SEC-*`, la tabla de
+  autorización, las reglas de logging y métricas, las decisiones materiales
+  pendientes ni los riesgos aceptados.
+- Esta modificación requiere reaprobación explícita del diseño de seguridad y
+  no constituye por sí misma esa reaprobación. La autorización para editar este
+  documento tampoco equivale a aprobar su contenido resultante.
+- El diseño de seguridad reabierto el `2026-09-21` fue reaprobado explícitamente
+  por `Product Owner` el `2026-09-25`. La reaprobación comprende la incorporación
+  de `SEC-TEST-001-029`, dedicada a verificar negativamente `SEC-001-021`.
 
 ## Aprobación de diseño de seguridad
 
 - **Estado:** `Aprobado`
 - **Aprobado por:** `Product Owner`
-- **Fecha:** `2026-09-20`
-- **Comentario o referencia:** Reaprobación explícita del diseño de seguridad
-  de SPEC-001 después de incorporar el sistema de diseño.
+- **Fecha:** `2026-09-25`
+- **Comentario o referencia:** Aprobación explícita del Product Owner del
+  `2026-09-25` del diseño de seguridad de SPEC-001, incluida la incorporación
+  de `SEC-TEST-001-029` para `SEC-001-021`.
+
+La versión reabierta el `2026-09-21` quedó reaprobada el `2026-09-25`. La
+aprobación previa del `2026-09-20` corresponde a la versión anterior, que no
+incluía `SEC-TEST-001-029`, y permanece registrada en el control de cambios.
 
 La existencia de este archivo no constituye aprobación. Ningún riesgo de
 severidad alta o crítica puede aceptarse implícitamente. Todo riesgo aceptado

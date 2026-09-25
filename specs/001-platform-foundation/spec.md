@@ -4,10 +4,10 @@
 
 - **ID:** `SPEC-001`
 - **Nombre:** `Platform Foundation`
-- **Estado:** `Design Approved`
+- **Estado:** `Plan Approved`
 - **Responsable:** `Product Owner`
 - **Fecha:** `2026-09-19`
-- **Última actualización:** `2026-09-20`
+- **Última actualización:** `2026-09-25`
 
 ## Problema
 
@@ -645,6 +645,33 @@ requisitos y permanecen vigentes durante la revisión del cambio posterior.
   `data-model.md` y `contracts/openapi.yaml`. Esta transición habilita la
   redacción de `plan.md`, pero no constituye aprobación anticipada del plan ni
   autorización de implementación.
+- El `2026-09-21`, una revisión independiente del borrador de `plan.md`
+  detectó dos brechas en los artefactos de diseño aprobados: `SEC-001-021` no
+  contaba con ninguna prueba negativa en la matriz `SEC-TEST-*` de
+  `security.md`, y el contrato `contracts/openapi.yaml` 1.0.0 no documentaba
+  las respuestas que el límite HTTP emite de forma deliberada sobre las rutas
+  contratadas. Por esa razón SPEC-001 vuelve de `Design Approved` a
+  `Requirements Approved` y se reabren **únicamente** `security.md` y
+  `contracts/openapi.yaml`. La aprobación vigente de los requisitos no se
+  modifica y `acceptance.md`, `ui-design.md` y `data-model.md` conservan sus
+  aprobaciones. `plan.md` permanece en `Draft`. Esta reapertura no autoriza
+  implementación, no autoriza crear `tasks.md` y no constituye aprobación
+  anticipada de los artefactos corregidos.
+- SPEC-001 no puede volver a declararse `Design Approved` hasta que
+  `security.md` y `contracts/openapi.yaml` cuenten con reaprobación explícita
+  registrada del Product Owner.
+- El `2026-09-25`, Product Owner reaprobó explícitamente `security.md`, incluida
+  `SEC-TEST-001-029` para `SEC-001-021`, y aprobó explícitamente
+  `contracts/openapi.yaml` 1.1.0. Verificados ambos registros, SPEC-001 vuelve
+  a `Design Approved`. La aprobación de requisitos permanece vigente y
+  `plan.md` continúa en `Draft` con aprobación pendiente; esta transición no
+  aprueba el plan ni autoriza crear `tasks.md` o implementar.
+- El `2026-09-25`, mediante un acto posterior e independiente, Product Owner
+  aprobó explícitamente `plan.md` 1.0.0, incluidas sus decisiones
+  arquitectónicas, operacionales, de seguridad, observabilidad, pruebas,
+  límites y riesgos documentados. SPEC-001 avanza a `Plan Approved`. Esta
+  aprobación no autoriza crear `tasks.md`, avanzar a `Ready for Implementation`
+  ni implementar código; esas etapas requieren autorización posterior.
 
 ## Aprobación de requisitos
 
