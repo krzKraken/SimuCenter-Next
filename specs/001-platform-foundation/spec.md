@@ -4,7 +4,7 @@
 
 - **ID:** `SPEC-001`
 - **Nombre:** `Platform Foundation`
-- **Estado:** `Plan Approved`
+- **Estado:** `Ready for Implementation`
 - **Responsable:** `Product Owner`
 - **Fecha:** `2026-09-19`
 - **Última actualización:** `2026-09-25`
@@ -672,6 +672,18 @@ requisitos y permanecen vigentes durante la revisión del cambio posterior.
   límites y riesgos documentados. SPEC-001 avanza a `Plan Approved`. Esta
   aprobación no autoriza crear `tasks.md`, avanzar a `Ready for Implementation`
   ni implementar código; esas etapas requieren autorización posterior.
+- El `2026-09-25`, mediante un acto posterior e independiente, Product Owner
+  aprobó explícitamente `tasks.md` versión `1.0.0`, comprendiendo sus 104
+  tareas, sus dependencias, sus fases, sus gates, el ownership de evidencia
+  final de las pruebas y sus matrices de trazabilidad. Verificado ese registro,
+  SPEC-001 avanza a `Ready for Implementation`. Esta transición autoriza
+  únicamente la **disponibilidad documental** para implementación: **ninguna
+  tarea ha sido ejecutada**, no existe código, configuración ejecutable ni
+  dependencia instalada, y ningún criterio de aceptación cuenta todavía con
+  evidencia. Avanzar a `In Progress` y comenzar la ejecución requieren una
+  autorización posterior e independiente. Las aprobaciones anteriores de
+  requisitos, `acceptance.md`, `security.md`, `ui-design.md`, `data-model.md`,
+  `contracts/openapi.yaml` y `plan.md` permanecen vigentes y sin modificación.
 
 ## Aprobación de requisitos
 
