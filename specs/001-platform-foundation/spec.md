@@ -7,7 +7,7 @@
 - **Estado:** `Ready for Implementation`
 - **Responsable:** `Product Owner`
 - **Fecha:** `2026-09-19`
-- **Última actualización:** `2026-09-25`
+- **Última actualización:** `2026-09-29`
 
 ## Problema
 
@@ -684,6 +684,22 @@ requisitos y permanecen vigentes durante la revisión del cambio posterior.
   autorización posterior e independiente. Las aprobaciones anteriores de
   requisitos, `acceptance.md`, `security.md`, `ui-design.md`, `data-model.md`,
   `contracts/openapi.yaml` y `plan.md` permanecen vigentes y sin modificación.
+- El primer intento de iniciar `TASK-001-001` se detuvo antes de editar o
+  implementar. El `2026-09-29`, Product Owner autorizó reabrir `tasks.md` como
+  `1.0.1-draft` para corregir su ejecutabilidad y devolver temporalmente
+  SPEC-001 a `Plan Approved`. La implementación queda pausada hasta la revisión
+  y aprobación independientes de ese borrador. Ninguna tarea fue ejecutada y no
+  existe implementación; permanecen intactas las aprobaciones históricas de
+  requisitos, seguridad, OpenAPI, plan y `tasks.md` 1.0.0.
+- El `2026-09-29`, tras una revisión independiente que declaró apto el borrador
+  correctivo, Product Owner aprobó `tasks.md` versión `1.0.1` y autorizó
+  restaurar SPEC-001 a `Ready for Implementation`. Esta transición habilita
+  únicamente la disponibilidad documental para una futura implementación:
+  ninguna tarea fue ejecutada, no se produjo implementación ni se creó código
+  o configuración ejecutable, no se instalaron dependencias y ningún criterio
+  de aceptación obtuvo evidencia por este acto. Iniciar `TASK-001-001` o
+  cualquier otra tarea y avanzar a `In Progress` requieren autorización
+  posterior e independiente.
 
 ## Aprobación de requisitos
 

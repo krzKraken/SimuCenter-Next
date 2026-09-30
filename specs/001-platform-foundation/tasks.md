@@ -5,10 +5,10 @@ Referencia: `SPEC-001`
 ## Metadata
 
 - **SPEC:** `SPEC-001 Platform Foundation`
-- **Versión:** `1.0.0`
+- **Versión:** `1.0.1`
 - **Estado documental:** `Approved`
 - **Responsable:** `Equipo de desarrollo`
-- **Fecha:** `2026-09-25`
+- **Fecha:** `2026-09-29`
 
 ## Alcance y límites conservados
 
@@ -61,15 +61,17 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 
 ### TASK-001-001 — Resolver versiones, hashes, digests y procedencia iniciales
 
-- **Descripción:** Resolver y registrar las versiones exactas, los hashes de distribución, los digests OCI por plataforma y la procedencia de Python 3.14, Node 24.21 LTS, pnpm 12.5, uv, FastAPI, Pydantic, Uvicorn, React, TypeScript, Vite, Tailwind, Storybook, Vitest, Testing Library, Playwright, axe-core, i18next, la tipografía Inter, OpenTelemetry SDK y Collector, k6, Envoy, las acciones de CI por SHA completo y Gitleaks, Trivy y Syft. Esta tarea es el control temprano de resolución: no cierra la prueba negativa final de inventario.
+- **Descripción:** Resolver y registrar las versiones exactas, los hashes de distribución aplicables, los digests OCI de `linux/amd64` aplicables y la procedencia de Python 3.14, Node 24.21 LTS, pnpm 12.5, uv, FastAPI, Pydantic, Uvicorn, Ruff, Pyright, pytest, React, TypeScript, Vite, Tailwind, Storybook, Vitest, Testing Library, Playwright, axe-core, i18next, react-i18next, la tipografía Inter, OpenTelemetry SDK, OTLP y Collector, k6, OCI, Compose, Envoy, Gitleaks, Trivy, Syft, ESLint y Prettier. Esta tarea es el control temprano de resolución: no inventa workflows ni acciones CI futuras y no cierra la prueba negativa final de inventario.
+- **Plataforma OCI:** `linux/amd64` es la única plataforma inicial soportada por SPEC-001. Todo digest por plataforma exigido aquí corresponde a `linux/amd64`; `linux/arm64` y las demás plataformas quedan fuera del alcance inicial y requieren una decisión y cambio posteriores. Para una imagen multiarch se registrarán por separado la referencia o tag de origen, el digest del índice OCI cuando exista y el digest del manifiesto hijo `linux/amd64`, junto con fuente oficial, fecha y comando reproducible de resolución; el tag de origen no se usará como fijación inmutable.
+- **Política de acciones CI:** Ninguna acción puede usar una referencia flotante. La tarea que introduzca o modifique cada workflow seleccionará sus acciones, fijará cada una por SHA completo de commit y registrará su procedencia. `TASK-001-001` no selecciona acciones que todavía no existen; la prueba negativa final de inventario conserva su owner aprobado.
 - **Rutas previstas:** `docs/supply-chain/resolved-versions.md`; `docs/supply-chain/provenance-notes.md`
 - **Referencias:** `REQ-001-010`, `REQ-001-014`, `NFR-001-008`, `NFR-001-009`, `AC-001-020`, `AC-001-029`, `SEC-001-021`, `SEC-001-022`
 - **Dependencias:** Ninguna
 - **Paralelizable:** `No`
 - **Pruebas planificadas relacionadas:** `SEC-TEST-001-029`
-- **Verificación requerida:** `G0`, `G1`; ninguna línea queda con referencia flotante, `latest`, rango abierto ni tag mutable, y la versión ejercitada en el POC del borde no se registra como versión de entrega.
+- **Verificación requerida:** Comprobaciones documentales reproducibles de `docs/supply-chain/resolved-versions.md` y `docs/supply-chain/provenance-notes.md`: ninguna fila queda con referencia flotante, `latest`, rango abierto, tag mutable como fijación ni campo irresuelto, y la versión ejercitada en el POC del borde no se registra como versión de entrega. La evidencia producida será consumida posteriormente por `G0` y `G1`; esos gates aún no existen en este punto del DAG y ejecutarlos no es precondición de cierre de esta tarea. Sus tareas de implementación verificarán ambos archivos.
 - **Evidencia final a cargo:** La matriz asigna el cierre a otra tarea
-- **Criterio observable de cierre:** cada tecnología de la matriz tiene versión exacta, hash o digest y fuente registrada, o queda marcada como pendiente bloqueante.
+- **Criterio observable de cierre:** Cada tecnología aplicable de la matriz aprobada de `plan.md`, salvo las acciones CI concretas aún no introducidas por un workflow, queda registrada con versión exacta, hash de distribución cuando exista un artefacto descargable aplicable, digest OCI del manifiesto `linux/amd64` cuando exista una imagen aplicable, procedencia oficial, fecha y método reproducible. Cada «no aplica» identifica el tipo de evidencia evaluado —hash de distribución, digest OCI u otro campo exigido—, la razón técnica concreta, una fuente oficial o una comprobación reproducible sobre el artefacto oficial, su URL o identificador de procedencia cuando corresponda, el comando o método de inspección cuando sea aplicable y la fecha de comprobación. Sin evidencia verificable suficiente, el elemento queda pendiente y la tarea no puede cerrarse. Ambos archivos superan la validación documental reproducible y no contienen referencias flotantes. Cualquier elemento pendiente o realmente bloqueado mantiene la tarea abierta: «pendiente bloqueante» no satisface el cierre.
 - **Estado:** `Pendiente`
 
 ### TASK-001-002 — Crear el workspace pnpm raíz y los scripts reproducibles
@@ -1069,20 +1071,20 @@ exigido para PR, con `G10` después de `G9` dentro de la promoción.
 
 ### TASK-001-077 — Implementar G0
 
-- **Descripción:** Implementar el gate de alcance y aprobaciones que se ejecuta primero: verifica documentos y referencias vigentes, la concordancia de versiones y aprobaciones de `spec.md`, `acceptance.md`, `security.md`, `ui-design.md`, `data-model.md`, `contracts/openapi.yaml` y `plan.md`, el inventario de recursos y los lockfiles, SHA y digests, y bloquea ante alcance nuevo, placeholders fuera del bloque de aprobación o referencias mutables. Esta tarea construye el gate; su evidencia final se cierra después del verificador externo y de la protección de rama.
-- **Rutas previstas:** `scripts/ci/gate-g0`; `tooling/ci/approvals.yaml`; `.github/workflows/ci.yml`
+- **Descripción:** Implementar el gate de alcance y aprobaciones que se ejecuta primero: verifica documentos y referencias vigentes, la concordancia de versiones y aprobaciones de `spec.md`, `acceptance.md`, `security.md`, `ui-design.md`, `data-model.md`, `contracts/openapi.yaml` y `plan.md`, el inventario de recursos y los lockfiles, SHA y digests, y bloquea ante alcance nuevo, placeholders fuera del bloque de aprobación o referencias mutables. Consume y valida `docs/supply-chain/resolved-versions.md` y `docs/supply-chain/provenance-notes.md`: falla ante referencias flotantes, hashes requeridos ausentes, digest aplicable `linux/amd64` ausente o procedencia incompleta, y verifica los SHA completos de las acciones ya introducidas. Esta tarea construye el gate; su evidencia final se cierra después del verificador externo y de la protección de rama.
+- **Rutas previstas:** `scripts/ci/gate-g0`; `tooling/ci/approvals.yaml`; `.github/workflows/ci.yml`; `docs/supply-chain/provenance-notes.md`; `docs/supply-chain/resource-inventory.md`
 - **Referencias:** `REQ-001-010`, `REQ-001-028`, `NFR-001-002`, `AC-001-020`, `AC-001-042`, `SEC-001-021`, `SEC-001-036`
 - **Dependencias:** `TASK-001-005`, `TASK-001-007`, `TASK-001-076`
 - **Paralelizable:** `No`
 - **Pruebas planificadas relacionadas:** `TEST-001-020`, `TEST-001-042`, `SEC-TEST-001-022`, `SEC-TEST-001-028`
 - **Verificación requerida:** `G0`; una versión o aprobación divergente bloquea el PR.
 - **Evidencia final a cargo:** La matriz asigna el cierre a otra tarea
-- **Criterio observable de cierre:** el gate existe, se ejecuta primero y bloquea ante aprobación divergente, sin cerrar todavía su propia evidencia.
+- **Criterio observable de cierre:** el gate existe, se ejecuta primero y bloquea ante aprobación divergente, sin cerrar todavía su propia evidencia. Toda acción utilizada por `.github/workflows/ci.yml` queda fijada en `uses:` por SHA completo de commit; esta misma tarea registra en `docs/supply-chain/provenance-notes.md` su nombre, repositorio propietario, SHA completo, versión humana asociada y procedencia, y actualiza incrementalmente `docs/supply-chain/resource-inventory.md` con nombre, repositorio propietario, propósito, SHA completo usado en `uses:`, versión o tag humano solo informativo, procedencia, workflow y job consumidores y estado de revisión o autorización exigido por el inventario aprobado. Los tags no son referencias ejecutables. Una acción sin SHA completo, ausente de cualquiera de los dos registros o divergente entre workflow, procedencia e inventario impide cerrar esta tarea; `TASK-001-097` conserva el ownership final de `SEC-TEST-001-029`.
 - **Estado:** `Pendiente`
 
 ### TASK-001-078 — Implementar G1
 
-- **Descripción:** Implementar el gate de secretos y cadena de suministro antes de cualquier build privilegiado: Gitleaks sobre el repositorio, revisión de dependencias, acciones fijadas por SHA completo, imágenes y recursos visuales, y Trivy con base de vulnerabilidades identificada por versión, hash y fecha, de modo que una base no disponible o desactualizada más de 24 h bloquee la promoción en lugar de pasar en silencio. Los permisos por job son mínimos y el checkout no persiste credenciales.
+- **Descripción:** Implementar el gate de secretos y cadena de suministro antes de cualquier build privilegiado: Gitleaks sobre el repositorio, revisión de dependencias, acciones fijadas por SHA completo, imágenes y recursos visuales, y Trivy con base de vulnerabilidades identificada por versión, hash y fecha, de modo que una base no disponible o desactualizada más de 24 h bloquee la promoción en lugar de pasar en silencio. Consume y valida `docs/supply-chain/resolved-versions.md` y `docs/supply-chain/provenance-notes.md`: falla ante referencias flotantes, hashes requeridos ausentes, digest aplicable `linux/amd64` ausente o procedencia incompleta, y verifica los SHA completos de las acciones ya introducidas. Los permisos por job son mínimos y el checkout no persiste credenciales.
 - **Rutas previstas:** `scripts/ci/gate-g1`; `tooling/ci/gitleaks.toml`; `tooling/ci/trivy.yaml`
 - **Referencias:** `REQ-001-010`, `NFR-001-002`, `NFR-001-009`, `AC-001-020`, `AC-001-031`, `AC-001-032`, `SEC-001-002`, `SEC-001-019`, `SEC-001-020`, `SEC-001-021`, `SEC-001-022`, `SEC-001-024`
 - **Dependencias:** `TASK-001-005`, `TASK-001-076`, `TASK-001-077`
@@ -1225,7 +1227,7 @@ exigido para PR, con `G10` después de `G9` dentro de la promoción.
 
 ### TASK-001-089 — Cerrar G0 y su evidencia final
 
-- **Descripción:** Cerrar la evidencia final de `G0` una vez que existen y se han ejecutado su implementación, el manifiesto versionado, `scripts/ci/verify-required-checks`, la verificación externa de los required checks y la protección de rama configurada. Aquí se cierra además la validación documental del diseño visual: existencia, versión, contenido mínimo y aprobación explícita de `ui-design.md` previas a `plan.md`, de modo que la falta del archivo, de algún contenido, de la versión o de la aprobación impida habilitar la etapa.
+- **Descripción:** Cerrar la evidencia final de `G0` una vez que existen y se han ejecutado su implementación, el manifiesto versionado, `scripts/ci/verify-required-checks`, la verificación externa de los required checks y la protección de rama configurada. El cierre incluye la validación de `docs/supply-chain/resolved-versions.md` y `docs/supply-chain/provenance-notes.md`, incluida la fijación por SHA completo de las acciones ya introducidas, sin referencia flotante, hash requerido ausente, digest aplicable `linux/amd64` ausente ni procedencia incompleta. Aquí se cierra además la validación documental del diseño visual: existencia, versión, contenido mínimo y aprobación explícita de `ui-design.md` previas a `plan.md`, de modo que la falta del archivo, de algún contenido, de la versión o de la aprobación impida habilitar la etapa.
 - **Rutas previstas:** `tests/ci/test_gate_g0_closure.py`; `tooling/ci/design-approval-validator.py`; `docs/evidence/gates/g0/`
 - **Referencias:** `REQ-001-010`, `REQ-001-028`, `NFR-001-002`, `AC-001-020`, `AC-001-042`, `SEC-001-021`, `SEC-001-036`
 - **Dependencias:** `TASK-001-076`, `TASK-001-077`, `TASK-001-086`, `TASK-001-087`, `TASK-001-088`
@@ -1974,19 +1976,48 @@ El grafo tiene **dos componentes débilmente conexas**:
 - El `2026-09-25`, Product Owner aprobó explícitamente este documento como
   versión `1.0.0` y autorizó avanzar `SPEC-001` a `Ready for Implementation`.
   Esa aprobación no autoriza ejecutar tareas, implementar código, instalar
-  dependencias ni avanzar a `In Progress`.
+  dependencias ni avanzar a `In Progress`. Referencia histórica: Aprobación
+  explícita del Product Owner del `2026-09-25` de `tasks.md` versión `1.0.0` de
+  SPEC-001 Platform Foundation, comprendiendo sus 104 tareas, sus dependencias,
+  sus fases, sus gates, el ownership de evidencia final de las pruebas y sus
+  matrices de trazabilidad.
+- El primer intento de ejecutar `TASK-001-001` se detuvo antes de editar o
+  implementar: la tarea no especificaba las plataformas OCI y anticipaba el
+  inventario de acciones CI aún inexistentes. El `2026-09-29`, Product Owner
+  autorizó reabrir `tasks.md` como `1.0.1-draft`, fijó `linux/amd64` como única
+  plataforma OCI inicial, trasladó la selección y resolución del SHA completo
+  de cada acción CI a la tarea que introduzca su workflow y aclaró que `G0` y
+  `G1` consumirán después la evidencia de `TASK-001-001`, sin ser condiciones
+  ejecutables para cerrarla. Este borrador correctivo requiere revisión y
+  aprobación independientes; ninguna tarea ha sido ejecutada. La revisión
+  independiente posterior detectó y corrigió seis tecnologías omitidas del
+  control temprano, la falta de evidencia verificable para cada «no aplica» y
+  la actualización incremental del inventario cuando `TASK-001-077` incorpore
+  acciones CI.
+- Una revisión final independiente declaró apto para reaprobación el borrador
+  `1.0.1-draft`. El `2026-09-29`, Product Owner aprobó explícitamente
+  `tasks.md` versión `1.0.1`, que incorpora las correcciones documentales de
+  ejecutabilidad. La versión `1.0.0` fue la aprobación anterior y
+  `1.0.1-draft` fue su reapertura correctiva. Ninguna tarea fue ejecutada
+  durante la reapertura ni por este acto de aprobación: las 104 permanecen
+  `Pendiente`.
 
 ## Aprobación de tareas
 
 - **Aprobación:** `Aprobado`
 - **Aprobado por:** `Product Owner`
-- **Fecha de aprobación:** `2026-09-25`
-- **Referencia:** Aprobación explícita del Product Owner del `2026-09-25` de
-  `tasks.md` versión `1.0.0` de SPEC-001 Platform Foundation, comprendiendo sus
-  104 tareas, sus dependencias, sus fases, sus gates, el ownership de evidencia
-  final de las pruebas y sus matrices de trazabilidad.
+- **Fecha de aprobación:** `2026-09-29`
+- **Referencia:** Aprobación explícita del Product Owner del `2026-09-29` de
+  `tasks.md` versión `1.0.1` de SPEC-001 Platform Foundation, comprendiendo
+  sus 104 tareas, dependencias, fases y gates, el ownership de evidencia final
+  de las pruebas y las matrices de trazabilidad; la corrección de
+  ejecutabilidad de `TASK-001-001`; `linux/amd64` como plataforma OCI inicial;
+  la selección y fijación de acciones CI en la tarea que introduzca el
+  workflow; la evidencia verificable de cada campo declarado «no aplica»; y
+  la actualización coordinada de procedencia e inventario al incorporar
+  acciones.
 
-Esta aprobación es documental y habilita la disponibilidad de las tareas para
-implementación. No ejecuta ninguna tarea, no marca ningún elemento de la
-checklist de cierre y no autoriza avanzar a `In Progress`: iniciar la ejecución
-requiere una autorización posterior e independiente.
+La aprobación histórica de `tasks.md` 1.0.0 figura en el control de cambios.
+La aprobación de `tasks.md` 1.0.1 habilita su disponibilidad documental para
+una futura implementación; no ejecuta tareas ni autoriza por sí sola avanzar
+SPEC-001 a `In Progress`.
