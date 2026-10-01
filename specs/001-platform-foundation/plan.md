@@ -3,18 +3,18 @@
 ## Metadata
 
 - **Referencia:** `SPEC-001`
-- **Versión:** `1.0.0`
+- **Versión:** `1.0.1`
 - **Estado:** `Approved`
 - **Responsable:** `Equipo de desarrollo`
 - **Autoridad de aprobación:** `Product Owner`
 - **Fecha:** `2026-09-21`
-- **Última actualización:** `2026-09-25`
+- **Última actualización:** `2026-10-01`
 
 ## Resumen técnico
 
 Monorepo con backend Python/FastAPI, frontend React/TypeScript y componentes
 compartidos en `packages/ui`. El diseño visual `ui-design.md` 1.0.0 aprobado y
-el contrato `contracts/openapi.yaml` 1.1.0-draft son las fuentes normativas de
+el contrato `contracts/openapi.yaml` 1.1.0 aprobado son las fuentes normativas de
 presentación y transporte. La foundation es stateless, sin persistencia ni
 negocio. Solo implementa dos operaciones backend: `GET /health` y `GET /ready`.
 La primera es la única que este plan propone exponer públicamente, con su
@@ -22,18 +22,31 @@ respuesta mínima; la segunda pertenece exclusivamente al plano operacional.
 Métricas mediante OpenTelemetry/OTLP, logs JSON a stdout y evidencia
 reproducible de calidad, seguridad, accesibilidad y rendimiento.
 
-[Seguro] Verificable en este repositorio: `acceptance.md`, `ui-design.md` 1.0.0
-y `data-model.md` 1.0.0 están aprobados. `spec.md` está en
-`Requirements Approved`; `security.md` y `contracts/openapi.yaml` 1.1.0-draft
-quedaron reabiertos el `2026-09-21` y están **pendientes de reaprobación** tras
-la revisión independiente de este borrador. Mientras esa reaprobación no exista,
-este plan no puede aprobarse.
+La topología central de esta revisión tiene cuatro servicios: backend, edge
+Envoy, `web-static` interno y OpenTelemetry Collector. Envoy es el único límite
+HTTP público y termina TLS; entrega los archivos Vite e Inter mediante proxy
+exclusivo hacia `web-static`, que no tiene acceso directo desde redes externas.
+Esta corrección arquitectónica fue aprobada por el Product Owner el
+`2026-09-30` y registrada en `ADR-0003`, aceptado independientemente el
+`2026-10-01`. Este plan `1.0.1` fue aprobado mediante un acto posterior e
+independiente el `2026-10-01`; la implementación permanece pausada.
 
-**Base normativa de las decisiones de este plan.** Salvo las dos decisiones
+[Seguro] `acceptance.md`, `security.md`, `ui-design.md` 1.0.0,
+`data-model.md` 1.0.0 y `contracts/openapi.yaml` 1.1.0 conservan sus
+aprobaciones. Al aprobarse este plan, SPEC-001 pasó de `Design Approved` a
+`Plan Approved` y `tasks.md` 1.0.2 permanecía en `Draft`, con aprobación
+pendiente. Posteriormente, el Product Owner aprobó independientemente
+`tasks.md` 1.0.2 el `2026-10-01` y SPEC-001 volvió a
+`Ready for Implementation`, solo como disponibilidad documental.
+`TASK-001-001` no fue reanudada, ninguna tarea fue completada y la
+implementación continúa pausada; avanzar a `In Progress` requiere autorización
+posterior e independiente.
+
+**Base normativa de las decisiones originales de este plan.** Salvo las dos decisiones
 específicas que el Product Owner autorizó expresamente —el nivel ASVS 5.0.0 L1
 como baseline con controles L2/L3 seleccionados, y la ausencia de persistencia
 de idioma en SPEC-001, ambas registradas en **Preguntas abiertas, A0**—, este
-documento no invoca ninguna otra autorización del Product Owner. Esas dos
+documento original no invocaba otra autorización del Product Owner. Esas dos
 autorizaciones alcanzan a su decisión de contenido y **no aprueban ningún
 documento**; no llevan fecha ni referencia documental porque no se emitió
 ninguna y este plan no la inventa. Las decisiones que delimitan superficie y
@@ -55,9 +68,11 @@ elección al plan:
 - fijar valores de límites, timeouts, backpressure, pools y presupuestos se
   sustenta en `SEC-001-015` y `SEC-001-016`, que asignan esos valores al plan.
 
-Ninguna de estas decisiones está aprobada todavía. La futura aprobación
-explícita de este plan es lo que las autorizará. La autorización recibida para
-corregir estos documentos no es aprobación de su contenido.
+Las decisiones anteriores se aprobaron históricamente con `plan.md` 1.0.0.
+La corrección de topología y bases OCI fue aprobada como decisión por el
+Product Owner el `2026-09-30`; ese acto no aprobó documentalmente el plan ni
+reanudó la implementación. La aprobación independiente de `plan.md` 1.0.1
+se registró posteriormente, el `2026-10-01`.
 
 [Suposición] Los presupuestos iniciales son suficientes para medir esta base;
 solo las ejecuciones previstas podrán validarlo. No son capacidad demostrada.
@@ -118,13 +133,16 @@ El esquema de directorios admite módulos futuros sin copiarlos del legacy.
 
 Consulta de fuentes oficiales: **2026-09-21 UTC**. Las versiones observadas
 no sustituyen la resolución exacta ni demuestran compatibilidad del conjunto.
+La comprobación de las familias OCI aprobadas y de la limitación del filtro
+de archivos de Envoy se añadió el **2026-09-30 UTC**; la revisión no fija
+ningún digest nuevo y `TASK-001-001` debe registrar la evidencia reproducible.
 Las líneas fijadas por este draft son Python **3.14**, Node **24.21 LTS** y
 pnpm **12.5**. No se admiten otras líneas sin revisión del plan.
 
 | Tecnología | Propósito | Versión o resolución prevista | Fuente oficial |
 |---|---|---|---|
-| Python | Runtime backend | Línea 3.14; estable observada 3.14.7 | [Descargas y estado](https://www.python.org/downloads/) |
-| Node.js | Build, catálogo y pruebas; no servidor productivo del frontend | Línea 24.21 LTS; observada 24.21.0 | [Descargas](https://nodejs.org/en/download), [ciclo de versiones](https://nodejs.org/en/about/previous-releases) |
+| Python | Builder y runtime backend; fixtures Python del borde reutilizan su base OCI | `docker.io/library/python:3.14.7-slim-trixie`; digest hijo `linux/amd64` pendiente en `TASK-001-001` | [Imagen oficial](https://hub.docker.com/_/python), [descargas y estado](https://www.python.org/downloads/) |
+| Node.js | Builder Vite y catálogo local/CI; no servidor productivo del frontend | `docker.io/library/node:24.21.0-trixie-slim`; digest hijo `linux/amd64` pendiente en `TASK-001-001` | [Imagen oficial](https://hub.docker.com/_/node), [ciclo de versiones](https://nodejs.org/en/about/previous-releases) |
 | pnpm | Workspace e instalación JS reproducible | Línea 12.5; observada 12.5.1, compatible con Node 24 | [Instalación](https://pnpm.io/installation), [release 12.5.1](https://github.com/pnpm/pnpm/releases/tag/v12.5.1) |
 | FastAPI, Pydantic | API y validación | FastAPI con soporte Python 3.14; Pydantic 2; versiones exactas pendientes de resolver | [FastAPI](https://fastapi.tiangolo.com/release-notes/), [Pydantic](https://docs.pydantic.dev/latest/) |
 | Uvicorn | Servidor ASGI, un proceso por contenedor | Exacta pendiente; comprobar soporte Python 3.14 | [Settings](https://www.uvicorn.org/settings/) |
@@ -134,13 +152,14 @@ pnpm **12.5**. No se admiten otras líneas sin revisión del plan.
 | Tailwind CSS | Generación de estilos desde variables semánticas | Exacta pendiente; no paleta normativa propia | [Documentación](https://tailwindcss.com/docs) |
 | Storybook | Catálogo local/CI | Exacta compatible con React/Vite; addons mínimos inventariados | [Documentación](https://storybook.js.org/docs) |
 | Vitest, Testing Library | Unit/integration UI e interacción | Exactas pendientes de resolver | [Vitest](https://vitest.dev/guide/), [Testing Library](https://testing-library.com/docs/) |
-| Playwright, axe-core | E2E, visual y accesibilidad automática | Exactas; browsers y SO fijados por ejecución | [Playwright](https://playwright.dev/docs/browsers), [axe-core](https://github.com/dequelabs/axe-core) |
+| Playwright, axe-core | E2E, visual y accesibilidad automática | Imagen de ejecución `mcr.microsoft.com/playwright:v1.63.0-noble` por digest hijo `linux/amd64`; verificar Node interno y asegurar Node 24.21.0 para herramientas del proyecto; browsers y SO fijados por ejecución | [Imagen oficial Playwright](https://playwright.dev/docs/docker), [axe-core](https://github.com/dequelabs/axe-core) |
 | i18next, react-i18next | ES/EN, fallback y selector | Exactas pendientes de resolver | [i18next](https://www.i18next.com/), [react-i18next](https://react.i18next.com/) |
 | Inter | Tipografía local aprobada | Archivos exactos, licencia y hashes pendientes de inventario | [Distribución](https://rsms.me/inter/), [licencia](https://github.com/rsms/inter/blob/master/LICENSE.txt) |
 | OpenTelemetry SDK, OTLP, Collector | Métricas sin transporte HTTP público | Exactas y compatibilidad de protocolo pendientes de resolver | [Python](https://opentelemetry.io/docs/languages/python/), [Collector](https://opentelemetry.io/docs/collector/configuration/) |
 | k6 | Baseline de carga sintética | Exacta pendiente de resolver | [Documentación](https://grafana.com/docs/k6/latest/) |
 | OCI, Compose | Contenedores y entorno portable | Especificaciones y CLI exacta registradas al implementar | [OCI](https://opencontainers.org/), [Compose](https://docs.docker.com/compose/) |
-| Envoy | Adaptador del límite HTTP y estáticos | Línea y digest de entrega **pendientes de resolver**; versión probada en el POC aislado: `v1.39.1`, digest `sha256:57e14a549d7bd43c8d3f6d03e8cfa653e037d4b38e133acd9b54f38c524401b4` | [Timeouts](https://www.envoyproxy.io/docs/envoy/latest/faq/configuration/timeouts), [Local reply](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/local_reply), [HCM](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto) |
+| Envoy | Único borde público: TLS, acceso, correlación, límites, timeouts, rate limiting, respuestas locales y proxy; no sirve archivos directamente | Imagen `envoyproxy/envoy:v1.39.1`, con índice e hijo `linux/amd64` ya documentados en R32; el POC aislado no sustituye las pruebas de entrega | [Imagen oficial](https://hub.docker.com/r/envoyproxy/envoy), [Timeouts](https://www.envoyproxy.io/docs/envoy/latest/faq/configuration/timeouts), [Local reply](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/local_reply) |
+| NGINX | Origen interno `web-static` para artefactos Vite e Inter | Imagen oficial Debian 13 `docker.io/library/nginx:<VERSION_ESTABLE_EXACTA>-trixie`; versión e índices/hijo `linux/amd64` pendientes de `TASK-001-001`, sin tag flotante | [Imagen oficial](https://hub.docker.com/_/nginx) |
 | GitHub Actions | Orquestación de los scripts | Cada acción por SHA completo revisado, nunca tag | [Seguridad](https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions) |
 | Gitleaks, Trivy, Syft | Secretos, vulnerabilidades e inventario/SBOM | Exactas y binarios/imágenes verificados durante implementación | [Gitleaks](https://github.com/gitleaks/gitleaks), [Trivy](https://trivy.dev/), [Syft](https://github.com/anchore/syft) |
 | ESLint, Prettier | Reglas JS/TS y formato compartido | Exactas pendientes, solo plugins necesarios | [ESLint](https://eslint.org/docs/latest/), [Prettier](https://prettier.io/docs/) |
@@ -170,7 +189,8 @@ pendiente bloquea la entrega, no se sustituye por una referencia flotante.
 | Backend | Vida, readiness, errores, configuración, logs y métricas; sin negocio |
 | Frontend | Pantalla pública y diagnóstico técnico mínimo; no consulta readiness |
 | packages/ui | Tokens y cinco componentes compartidos; sin acceso a red implícito |
-| Límite HTTP | Estáticos, acceso público exclusivo a health, límites y headers |
+| Edge Envoy | Único límite público y TLS; acceso público exclusivo a health, proxy de estáticos, límites y headers |
+| web-static | Origen NGINX interno de archivos Vite e Inter; sin API, proxy backend ni exposición directa |
 | Plano operacional | Readiness, OTLP y acceso de operadores/probes, no Identity |
 | Tooling y CI | Verificaciones, trazabilidad, cadena de suministro y promoción |
 | Catálogo y pruebas | Aislamiento, ejemplos sintéticos, evidencia no productiva |
@@ -182,29 +202,44 @@ pendiente bloquea la entrega, no se sustituye por una referencia flotante.
   Los routers no contienen reglas de negocio; no se crean microservicios.
 - **ADR-0002 Accepted:** condiciona futuras tablas tenant y RLS, no obliga a
   incorporar PostgreSQL en esta spec. `data-model.md` declara no aplicabilidad.
+- **ADR-0003 Accepted:**
+  `docs/architecture/adr/ADR-0003-envoy-web-static-topology.md` documenta la
+  topología aceptada Envoy público → `web-static` NGINX interno. Fue aprobado
+  independientemente por el Product Owner el `2026-10-01`, antes de este plan
+  `1.0.1`; la topología todavía no está implementada.
 - **Contrato primero:** el contrato versionado tiene precedencia sobre la
   generación automática. La igualdad se verifica semánticamente y mediante
   respuestas reales, incluidas las del límite HTTP. `contracts/openapi.yaml`
-  1.1.0-draft está pendiente de reaprobación; hasta obtenerla, ninguna operación
-  puede implementarse contra él.
-- **Vida pública mínima (propuesta del plan, no autorización previa):** exponer
+  1.1.0 está aprobado por el Product Owner desde el `2026-09-25`;
+  `tasks.md` 1.0.2 fue aprobado independientemente el `2026-10-01` y SPEC-001
+  volvió a `Ready for Implementation` solo como disponibilidad documental.
+  La implementación continúa pausada: reanudar `TASK-001-001` y avanzar
+  SPEC-001 a `In Progress` requieren autorización posterior e independiente.
+- **Vida pública mínima (decisión aprobada en este plan, no implementación):** exponer
   públicamente solo `GET /health` con su respuesta mínima. Se sustenta en
   `SEC-001-004`, `SEC-001-029` y `x-public-exposure` del contrato, que delegan
-  esa elección al plan. No amplía readiness, métricas ni catálogo, y queda
-  pendiente de la aprobación de este plan.
-- **Estáticos y mismo origen:** Envoy como adaptador del límite HTTP. Se elige
+  esa elección al plan. No amplía readiness, métricas ni catálogo; su
+  aprobación documental no autoriza implementarla.
+- **Estáticos y mismo origen:** Envoy como único límite HTTP público. Se elige
   porque expone un **plazo total por solicitud sobre el intento upstream**, que
   es requisito de la cadena de plazos de este plan, y porque permite fijar el
-  cuerpo de toda respuesta que el propio límite emite. El despliegue puede
-  sustituirlo si pasa la misma batería de límites/acceso/headers y revisión.
+  cuerpo de toda respuesta que el propio límite emite. Sustituirlo en SPEC-001
+  requeriría un nuevo cambio arquitectónico aprobado y la misma batería de
+  límites, acceso, headers y revisión.
+- **Origen de estáticos separado:** `web-static` basado en NGINX oficial Debian
+  13 `trixie` sirve únicamente Vite e Inter por la red interna. Envoy solo
+  hace proxy hacia él; el filtro `file_server` de Envoy queda prohibido para
+  esta entrega por estar oficialmente declarado incompleto y no apto para
+  producción. El Product Owner aprobó esta corrección el `2026-09-30`.
 - **Evidencia del adaptador y su alcance:** una prueba de viabilidad aislada
   ejercitó `Envoy v1.39.1`, digest
   `sha256:57e14a549d7bd43c8d3f6d03e8cfa653e037d4b38e133acd9b54f38c524401b4`,
   contra un upstream **exclusivamente sintético**, fuera del repositorio y sin
   implementación de SPEC-001. Esa ejecución **no es una instalación productiva
-  aprobada**, no fija la versión de entrega y no sustituye ningún gate: la
-  línea, el digest y la procedencia de la imagen de entrega siguen pendientes
-  de resolver y de revisión, como el resto de la matriz de tecnologías.
+  aprobada** ni sustituye ningún gate. La documentación de trabajo de
+  `TASK-001-001` registra por separado la imagen R32 y sus digests de índice
+  e hijo; esa evidencia sigue incompleta y sin aprobación hasta cerrar la
+  tarea. La resolución de R32 no demuestra la nueva topología ni su runtime.
 - **Un worker por réplica:** evita multiplicar memoria, colas y conexiones
   implícitamente. Escala horizontal explícita y presupuesto agregado validado.
 - **Diseño normativo independiente:** Tailwind implementa variables de
@@ -518,6 +553,13 @@ React/TypeScript/Vite, build estática. Sin menús de negocio ni rutas
 funcionales futuras. Consume exclusivamente `packages/ui` para capacidades
 cubiertas, sin otra librería visual completa.
 
+El builder usa la base oficial `docker.io/library/node:24.21.0-trixie-slim`
+fijada por digest hijo `linux/amd64`. Node no permanece en la imagen productiva.
+Los archivos Vite e Inter se copian a la imagen derivada de NGINX de
+`web-static`; Envoy es el único punto público que los entrega mediante proxy.
+Los archivos estáticos no son operaciones HTTP de la API: esta conserva solo
+`GET /health` y `GET /ready`.
+
 ### Anatomía de la pantalla inicial
 
 La pantalla inicial se compone de dos regiones, ambas construidas únicamente
@@ -661,6 +703,8 @@ texto e icono cuando corresponda, nunca solo color. No modificar alcance.
 ### Catálogo ejecutable y evidencia visual
 
 Storybook disponible localmente y en CI, nunca en la imagen/bundle productivo.
+Su contenedor aislado reutiliza la misma base Node fijada para el builder Vite;
+no incorpora una base OCI externa adicional ni se despliega en preview o staging.
 Build y ejecución aislados, sin secretos ni montajes amplios del host, sin egress por
 defecto; solo código revisado y addons imprescindibles inventariados. Dependencias
 se obtienen en fase separada verificada; ejemplos usan recursos locales.
@@ -696,14 +740,14 @@ tokens ni información sensible, aunque la captura parezca inocua.
 
 ## Contrato OpenAPI
 
-Normativo: `contracts/openapi.yaml`, OpenAPI 3.1.0, contrato **1.1.0-draft**,
-`x-contract-status: draft`, aprobación **pendiente de reaprobación**. La
-aprobación registrada de 1.0.0 se conserva en `x-approval-history` y no se
-extiende a esta versión. Conservar `servers: []`, operationId, schemas,
+Normativo: `contracts/openapi.yaml`, OpenAPI 3.1.0, contrato **1.1.0**,
+`x-contract-status: approved`, aprobado por el Product Owner el
+`2026-09-25`. La aprobación histórica de 1.0.0 y la vigente de 1.1.0 constan
+en `x-approval-history`. Conservar `servers: []`, operationId, schemas,
 ejemplos sintéticos y metadata.
 
-1.1.0-draft no añade rutas, métodos ni capacidades: incorpora exclusivamente
-las respuestas que el límite HTTP de esta foundation emitirá de forma
+La versión aprobada 1.1.0 no añade rutas, métodos ni capacidades: incorpora
+exclusivamente las respuestas que el límite HTTP de esta foundation emitirá de forma
 deliberada y configurada sobre las rutas ya contratadas. Esas respuestas están
 **previstas por el diseño**, no observadas en ejecución: SPEC-001 no tiene
 implementación y este plan no puede invocar ninguna ejecución como evidencia.
@@ -728,14 +772,14 @@ causas venció ni la identidad del upstream, y `UpstreamUnavailable` no expone
 cuál de sus tres causas se produjo. `ReadinessNotReady` **no cambia**: conserva su cuerpo mínimo
 `{status: not_ready}` y no se convierte en `ErrorResponse`.
 
-Respecto del borrador anterior, esta corrección incorpora `RequestTimeout` y
-`UpstreamUnavailable` y **delimita** `GatewayTimeout` a los vencimientos de
+Respecto del borrador anterior, la revisión contractual 1.1.0 incorporó
+`RequestTimeout` y `UpstreamUnavailable` y **delimitó** `GatewayTimeout` a los vencimientos de
 plazo de upstream. La declaración previa de que SPEC-001 no documentaría 504
 sigue sustituida. `SERVICE_OVERLOADED` sigue sin existir: no se contrata.
 Ningún requisito, criterio de aceptación ni control aprobado prohibía estos
 códigos; `spec.md`, `acceptance.md` y `security.md` no los mencionan, por lo
-que la incorporación no contradice ningún artefacto aprobado, aunque sí exige
-la reaprobación del contrato ya pendiente.
+que la incorporación no contradice ningún artefacto aprobado. La
+reaprobación del contrato se registró el `2026-09-25`.
 
 **Qué demostró el POC y qué no.** La prueba de viabilidad aislada observó
 directamente, a través del límite y contra un upstream sintético, las
@@ -892,13 +936,72 @@ variables requeridas y recuperación sin secretos; probar checkout limpio.
 
 | Superficie | Local | CI | Preview/staging | Despliegue |
 |---|---|---|---|---|
-| Pantalla pública | Límite en loopback | Red efímera de pruebas | Estáticos públicos en TLS del listener público | Estáticos públicos en TLS |
+| Pantalla pública | Envoy en loopback → `web-static` interno | Envoy en red efímera → `web-static` interno | TLS solo en Envoy público → `web-static` interno | TLS solo en Envoy público → `web-static` interno |
 | Health público mínimo | Proxy exacto desde mismo origen | Probar desde red pública simulada | Única ruta backend en el mapa del listener público | Única ruta backend autorizada en listener público |
 | Readiness | Backend sin puerto publicado; probe/operador entra por proceso autorizado | Red interna distinta, prueba denegada desde cliente público | **Listener operacional separado** y obligatorio (ver abajo); ausente del mapa público | Puerto/backend sin ruta pública; reglas de red solo probes/operador |
 | Métricas OTLP | Collector en red interna sin puerto publicado | Receptor interno y lectura de evidencia autorizada | Collector sin puerto publicado; solo red operacional | Red operacional y TLS/mTLS fuera del host; ninguna ruta pública |
+| Origen `web-static` | Solo red Envoy–estáticos; sin puerto publicado | Igual, en red efímera | Sin puerto publicado ni DNS público; solo Envoy lo alcanza | Sin acceso directo desde redes externas; solo Envoy lo alcanza |
 | Catálogo | Loopback, contenedor aislado, inicio explícito | Solo job aislado; no publicación | Excluido del artefacto; no se publica | Excluido; publicación separada requiere autorización nueva |
 | Carga | Perfil apagado, autorización y destino de prueba explícitos | Job manual confiable y aislado | Solo con autorización operacional vigente y destino permitido | Solo entorno no productivo autorizado; producción bloqueada |
 | Evidencia/promoción | Directorio privado a operador/revisor | Acceso restringido, promoción confiable revisada | Acceso restringido a operador/revisor | Denegada salvo proceso y revisión autorizados |
+
+#### Topología pública y origen de estáticos
+
+```text
+Cliente → Envoy público (TLS, acceso, correlación, límites y proxy)
+             ├→ backend: solo rutas API aprobadas
+             └→ web-static: solo Vite e Inter por red interna
+```
+
+Envoy conserva el listener operacional separado, RBAC/allowlist, timeouts,
+rate limiting, headers y mapeo de respuestas locales. Es el único límite
+HTTP público. Su mapa público evalúa, en este orden conceptual:
+
+1. `/ready` se trata explícitamente como **ruta ausente** en esta entrada: no
+   se reenvía ni al backend ni al fallback SPA y nunca produce un 200 de SPA.
+   La exclusión se expresa como guardia negativa anterior al catch-all, no
+   como una operación API ni como una ruta upstream pública para `/ready`.
+2. La coincidencia exacta `GET /health` se dirige al backend; se conserva la
+   respuesta mínima y la taxonomía contratada, incluido el 503
+   `{"status":"not_ready"}` cuando lo origine la aplicación en la entrada
+   operacional correspondiente.
+3. Solo los métodos `GET` y `HEAD` de archivos estáticos se envían a
+   `web-static`; un fallback SPA restringido sirve la pantalla, sin capturar
+   `/ready`, rutas de API ni archivos sensibles.
+4. Ninguna otra operación de API se crea. El servicio de archivos no añade
+   rutas a OpenAPI ni un endpoint público de health o métricas.
+
+`web-static` es un origen NGINX de responsabilidad única: entrega únicamente
+los artefactos inmutables Vite y la tipografía Inter. No termina TLS, no hace
+proxy al backend, no incorpora lógica de negocio ni sirve documentación,
+catálogo o archivos fuente. Su configuración también excluye `/ready` del
+fallback SPA, incluso ante una solicitud desde la red interna: no devuelve
+`200` ni la pantalla por esa ruta. Su imagen deriva de la imagen oficial NGINX sobre
+Debian 13 `trixie`; la versión estable exacta, el índice y el hijo
+`linux/amd64` siguen pendientes de `TASK-001-001`. La referencia de entrega
+usa el digest hijo y plataforma explícita, nunca un tag mutable.
+
+Solo Envoy puede alcanzarlo mediante una red interna dedicada o segmentación
+equivalente con política deny by default. No tiene puerto publicado, DNS
+público ni conexión directa desde redes externas. Escucha en un puerto interno
+no privilegiado y ejecuta como usuario numérico no root, con rootfs de solo
+lectura, capacidades eliminadas, `no-new-privileges` y `tmpfs` únicamente en
+las rutas de estado temporal necesarias. Un único worker, autoindex apagado,
+solo `GET`/`HEAD`, configuración mínima sin módulos ni funciones dinámicas
+innecesarias. Si se necesita healthcheck de contenedor, es estrictamente
+interno y no añade operación ni ruta pública.
+
+Envoy aplica los headers de seguridad y de caché apropiados a HTML, archivos
+Vite versionados y fuentes, con `Content-Type` correcto y sin revelar versión;
+NGINX no introduce una política pública contradictoria. Sus logs de acceso y
+error van a stdout/stderr y usan el esquema estructurado cuando corresponda,
+con correlación propagada desde Envoy cuando exista contexto válido. Nunca
+registran cuerpos, secretos, credenciales ni query strings sensibles. Se
+limitan y revisan por volumen; los eventos de rechazo y sus contadores siguen
+siendo responsabilidad de Envoy. No se abre `/metrics`: cualquier métrica
+necesaria usa únicamente el canal interno aprobado. Imagen, archivos y
+configuración se inventarían, escanean, incluyen en SBOM y promueven por
+digest con trazabilidad de procedencia.
 
 #### Mecanismo obligatorio y portable de acceso a `/ready` en preview/staging
 
@@ -915,7 +1018,7 @@ lista de opciones abiertas.
 | | Entrada pública | Entrada operacional |
 |---|---|---|
 | Quién entra | Cualquier cliente de Internet, incluido el navegador | Probes de plataforma y principales de operador nombrados |
-| Qué sirve | Estáticos y la coincidencia exacta `GET /health` | La coincidencia exacta `GET /ready` |
+| Qué sirve | Proxy de estáticos desde `web-static` y coincidencia exacta `GET /health`; nunca lee archivos locales | La coincidencia exacta `GET /ready` |
 | Dirección de escucha | Interfaz enrutable públicamente, con TLS | Dirección **no enrutable públicamente** del segmento operacional |
 | `/ready` en su mapa de rutas | **Ausente**; la ruta no existe en este listener | Presente |
 | Restricción del tráfico | Ninguna más allá de límites y TLS | Segmento no público **más** allowlist de peers evaluada sobre la dirección del peer validado, nunca sobre cabeceras de forwarding |
@@ -1006,7 +1109,8 @@ extiende `TEST-001-010` y `SEC-TEST-001-007` a preview/staging.
 Separar listener público de acceso directo al backend. Proxy público permite
 solo la coincidencia exacta health, no prefijos, normalizaciones ambiguas ni
 passthrough genérico; probar codificación, segmentos y rutas desconocidas.
-Red interna no publicada contiene backend y Collector; el operador usa acceso
+Las redes internas no publicadas contienen backend, Collector y el segmento
+aislado de `web-static`, al que solo llega Envoy; el operador usa acceso
 administrativo de la plataforma al contenedor/red. En producción sin aislamiento
 comprobable no se permite arrancar la entrega. No inventar login/API key de
 producto. Autorización operacional documenta principal de plataforma, recurso,
@@ -1064,7 +1168,8 @@ validarse y quedar registrados con la ejecución. No elevarlos automáticamente.
 | Recurso | Valor inicial y límite aplicable | Mecanismo y observación |
 |---|---|---|
 | Backend por réplica | 1 vCPU; 512 MiB; 1 worker; 128 PIDs | Límites OCI efectivos, CPU acumulada/RSS/eventos OOM |
-| Límite HTTP + frontend estático | 0.5 vCPU; 128 MiB; 128 PIDs | Imagen mínima no root; conexiones y rechazos |
+| Edge Envoy | 0.5 vCPU; 128 MiB; 128 PIDs | Único límite público; imagen mínima no root, conexiones y rechazos |
+| `web-static` | 0.25 vCPU; 64 MiB; 1 worker; límite PIDs efectivo documentado | NGINX interno no root; CPU/RSS/cuota efectiva, `tmpfs` acotado |
 | Collector | 0.5 vCPU; 256 MiB; 128 PIDs | Memoria, cola y exportación acotadas |
 | Generador k6 separado | 1 vCPU; 256 MiB | No comparte cuota con backend; registrar utilización |
 | Catálogo/build o browser CI | 2 vCPU; 2 GiB por job; un browser worker | Excluidos runtime; secuenciar según presupuesto runner |
@@ -1363,9 +1468,15 @@ Presupuesto inicial backend: máximo 4 vCPU, 2048 MiB, 1024 conexiones,
 256 activos, 144 en espera, 4 canales OTLP y 16 MiB de buffers por proceso
 (64 MiB agregados con R=4); R permitido 1–4, inicial 1. Los demás presupuestos
 ya verificados no se modifican.
-Con un límite HTTP y un Collector: `CPU_runtime = R × 1 + 0.5 + 0.5`;
-`RAM_runtime_MiB = R × 512 + 128 + 256`. R=1 implica 2 vCPU/896 MiB;
-R=4 implica 5 vCPU/2432 MiB. Host reserva adicional mínima 25% para sistema;
+Con E réplicas Envoy, S réplicas `web-static` y O réplicas Collector, todas
+inicialmente 1: `CPU_runtime = R × 1 + E × 0.5 + S × 0.25 + O × 0.5`;
+`RAM_runtime_MiB = R × 512 + E × 128 + S × 64 + O × 256`.
+R=1, E=S=O=1 implica 2.25 vCPU/960 MiB; R=4 implica 5.25 vCPU/2496 MiB.
+El validador inspecciona las cuotas OCI efectivas de los cuatro servicios,
+incluido el único worker y los 64 MiB de `web-static`, y rechaza toda
+divergencia o proceso no inventariado. Cambiar E, S u O requiere recalcular
+el presupuesto y revisar la segmentación y conectividad correspondiente.
+Host reserva adicional mínima 25% para sistema;
 `capacidad_host >= recursos_asignados / 0.75`, más jobs/generador concurrentes.
 No sumar jobs de 2 GiB a un runner sin recalcular; el baseline excluye esos jobs.
 Rate limit global agregado `E × 100/s`, con E límites HTTP; inicial E=1.
@@ -1394,6 +1505,11 @@ Serializar, no concatenar. Fallos de serialización también se contabilizan.
 DEBUG solo local explícito sin relajar sanitización; INFO para ciclo de vida y
 resúmenes; WARNING para degradación; ERROR para fallos. Sin access logs de
 éxito por request en aplicación ni proxy. Request ID solo logs/respuestas.
+`web-static` dirige acceso y error a stdout/stderr, aplica el esquema cerrado
+cuando emite registros estructurados y propaga únicamente el ID ya validado
+por Envoy cuando aplique. Reduce el volumen de éxitos informativos; no registra
+cuerpos, secretos ni query strings. Los rechazos de acceso público se registran
+y contabilizan en Envoy; no se inventa una ruta de métricas del origen estático.
 
 **Artefacto normativo del esquema de logs.** `NFR-001-007` y `AC-001-017`
 exigen que *cada* registro pueda validarse contra «el esquema documentado». Una
@@ -1596,15 +1712,38 @@ No afirmar soporte de 100 ni 1000 requests por segundo.
 
 ## Contenedores y entorno local
 
-Imágenes OCI multi-stage backend y frontend/límite, usuario numérico no root,
+Imágenes OCI multi-stage backend y frontend estático, con edge Envoy separado;
+usuario numérico no root,
 read-only root filesystem, capacidades eliminadas, no-new-privileges, límites
 CPU/memoria/PIDs y tmpfs acotado para temporales. Sin socket del motor ni
 montajes amplios del host, herramientas de desarrollo o secretos en capas.
-Inter y estáticos locales en imagen; Storybook, tests y fuentes no necesarias
-fuera de imagen de entrega. Verificar archivos/capas y usuario efectivo.
+Inter y estáticos locales únicamente en la imagen `web-static`; Storybook,
+tests, Node y fuentes no necesarias fuera de las imágenes de entrega. Verificar
+archivos/capas y usuario efectivo de backend, Envoy, `web-static` y Collector.
 
-Compose mínimo: backend, límite frontend y Collector, redes separadas,
-backend/OTLP sin published ports; solo listener de frontend en loopback local.
+El builder y runtime backend parten de
+`docker.io/library/python:3.14.7-slim-trixie` por digest hijo `linux/amd64`.
+El builder puede añadir temporalmente compiladores y dependencias nativas;
+el runtime copia solo artefactos necesarios y no los conserva. El builder Vite
+y el catálogo aislado parten de `docker.io/library/node:24.21.0-trixie-slim`
+por digest hijo. Fixtures Python reutilizan la base Python, sin otra base
+externa. La fase final `web-static` parte de
+`docker.io/library/nginx:<VERSION_ESTABLE_EXACTA>-trixie` por digest hijo,
+pendiente de resolución oficial en `TASK-001-001`. Playwright de CI usa
+`mcr.microsoft.com/playwright:v1.63.0-noble` por digest hijo; se verifica y
+documenta su Node efectivo y se asegura Node 24.21.0 para las herramientas
+del proyecto. No se usa Alpine para Python, Node, Playwright o `web-static`.
+Collector, k6 y Envoy conservan sus imágenes ya resueltas. No se crea una
+imagen OCI por cada CLI o dependencia ni se anticipan acciones de CI.
+
+Compose central: cuatro servicios, backend, edge Envoy, `web-static` y
+Collector. Envoy tiene la única entrada pública en loopback local y es el
+único terminador TLS externo. Backend, `web-static` y OTLP carecen de puertos
+publicados; `web-static` solo está en la red interna accesible por Envoy y no
+dispone de DNS público. El listener operacional separado conserva su red y
+allowlist; las rutas públicas bloquean `/ready` antes del catch-all SPA.
+Preview y staging despliegan los mismos cuatro servicios por digest y la
+misma separación de entradas y redes, sin exponer directamente los orígenes.
 Catálogo y k6 en perfiles explícitos apagados; el catálogo limita montaje a
 código necesario de solo lectura, caché efímera propia y sin credenciales.
 Credenciales operacionales TLS se montan solo en procesos que las necesitan,
@@ -1861,7 +2000,7 @@ matriz por revisión, no cambiar binarios silenciosamente en un baseline.
 
 | Contexto | Verificación prevista | Cierre de aceptación |
 |---|---|---|
-| Chrome y Edge desktop | Playwright con binarios de canal oficial actual/anterior en imágenes de prueba fijadas | E2E, a11y, foco y snapshots por navegador/SO |
+| Chrome y Edge desktop | Playwright sobre `mcr.microsoft.com/playwright:v1.63.0-noble` fijada por hijo `linux/amd64`, con binarios de canal oficial actual/anterior; verificar Node de la imagen y usar Node 24.21.0 para herramientas del proyecto | E2E, a11y, foco y snapshots por navegador/SO |
 | Firefox desktop | Playwright Firefox para automatización y contraste con Firefox estable real actual/anterior | El browser parcheado no sustituye por sí solo al estable requerido |
 | Safari desktop | WebKit Playwright como señal temprana; Safari real actual/anterior en macOS correspondiente | Revisión dirigida reproducible y capturas reales, evidencia obligatoria |
 | Safari iOS | Dispositivo/plataforma iOS real con Safari actual | Táctil, teclado aplicable, orientación, reflow y controles nativos |
@@ -1948,10 +2087,12 @@ declarar toda la aplicación L2 en esta etapa. Una spec de Identity, tenancy o
 datos sensibles deberá revisar nivel, alcance y requisitos antes de
 implementarse.
 
-Esa autorización **no aprueba este documento**: alcanza a la decisión de nivel,
-no al contenido del plan, que sigue pendiente de aprobación explícita junto con
-`security.md` y el contrato. **No se afirma certificación ni cumplimiento
-integral de ASVS**; demostrarlo exige implementación y evidencia.
+Esa autorización, por sí sola, **no aprobó este documento**: alcanzó a la
+decisión de nivel, no al contenido del plan. La aprobación independiente de
+`plan.md` 1.0.1 se registró el `2026-10-01`. Las aprobaciones de `security.md`
+y del contrato están vigentes. **No se afirma
+certificación ni cumplimiento integral de ASVS**; demostrarlo exige
+implementación y evidencia.
 Fuente del criterio de niveles: [Qué es ASVS](https://github.com/OWASP/ASVS/blob/v5.0.0/5.0/en/0x03-What-is-the-ASVS.md).
 
 ### Disposición de aplicabilidad por capítulo
@@ -1965,7 +2106,7 @@ títulos proceden de la publicación oficial en el tag `v5.0.0`.
 | V2 Validation and Business Logic | Parcialmente aplicable | Aplica a la validación documentada de configuración y del candidato de request ID en el servidor, y a la coherencia entre valores relacionados de presupuestos. No existe lógica ni flujo de negocio que validar. |
 | V3 Web Frontend Security | Aplicable | Existe una pantalla pública servida por el límite HTTP, con CSP, headers de seguridad, CORS y una matriz de navegadores soportados. |
 | V4 API and Web Service | Parcialmente aplicable | Aplica a las dos operaciones HTTP contratadas, su Content-Type, sus métodos permitidos, el forwarding de proxy confiable y la delimitación de mensajes. No hay GraphQL, WebSocket ni RPC. |
-| V5 File Handling | Parcialmente aplicable | No hay uploads: la foundation no recibe ni almacena archivos de un usuario, de modo que 5.2.1 y 5.2.2 no aplican. **Sí** aplica la parte de servicio y resolución de rutas: el límite HTTP sirve estáticos desde un directorio público (5.3.1) y resuelve rutas de solicitud a archivos, lo que exige defensa de path traversal y de destinos construidos con datos no confiables (5.3.2). Excluir el capítulo entero por la ausencia de uploads habría dejado sin evaluar esos dos requisitos L1. |
+| V5 File Handling | Parcialmente aplicable | No hay uploads: la foundation no recibe ni almacena archivos de un usuario, de modo que 5.2.1 y 5.2.2 no aplican. **Sí** aplica la parte de servicio y resolución de rutas: `web-static` sirve los archivos del directorio estático detrás de Envoy (5.3.1), con defensa tanto en el borde como en NGINX frente a path traversal y destinos construidos con datos no confiables (5.3.2). Excluir el capítulo entero por la ausencia de uploads habría dejado sin evaluar esos dos requisitos L1. |
 | V6 Authentication | No aplicable | No existe Identity: ni login, ni credenciales de producto, ni registro, ni recuperación, ni MFA. Una spec de Identity deberá aplicarlo con su propio threat model. |
 | V7 Session Management | No aplicable | No hay sesiones, cookies de sesión ni estado de usuario; el procesamiento es stateless y el frontend usa `credentials: omit`. |
 | V8 Authorization | Parcialmente aplicable | No existe autorización de producto `resource.action` ni acceso por objeto, de modo que 8.2.2 (IDOR/BOLA) no aplica. **Sí** aplica la autorización **operacional**: existe documentación de reglas de acceso por superficie (8.1.1, tabla **Autorización** de `security.md`), restricción de acceso a nivel de función sobre `/ready`, OTLP, catálogo y carga (8.2.1) y aplicación de esas reglas en una capa confiable —borde o plataforma— que el consumidor no puede manipular (8.3.1). Clasificar el capítulo como no aplicable habría dejado sin evaluar tres requisitos L1 que esta foundation sí ejerce. |
@@ -2048,8 +2189,8 @@ Resultado de la evaluación: **23 aplican**, **3 aplican parcialmente** y
 |---|---|---|---|---|---|
 | 5.2.1 | L1 | No aplica | No se aceptan archivos. El presupuesto equivalente de tamaño de solicitud existe y se verifica, pero pertenece a las defensas de disponibilidad de V15, no a este requisito | `SEC-001-015` | `SEC-TEST-001-009` |
 | 5.2.2 | L1 | No aplica | No se acepta ningún archivo cuyo tipo o extensión hubiera que validar; las fuentes e iconos se incorporan en build desde origen revisado e inventariado | `SEC-001-021`, `SEC-001-034` | `SEC-TEST-001-029` |
-| 5.3.1 | L1 | Parcial | No hay archivos subidos, pero el límite HTTP **sí sirve un directorio público** de estáticos: debe quedar demostrado que ninguno se ejecuta como código de servidor —sin CGI, FastCGI ni SSI— y que no hay listado de directorios | `SEC-001-025`, `SEC-001-033` | `SEC-TEST-001-023` |
-| 5.3.2 | L1 | **Aplica** | El límite resuelve rutas de solicitud a archivos del directorio estático, de modo que path traversal, segmentos codificados y normalizaciones ambiguas deben rechazarse. Además, los destinos de OTLP y de carga se construyen desde allowlists validadas antes de conectar, nunca desde datos de la solicitud, que es la parte SSRF del requisito | `SEC-001-017`, `SEC-001-029`, `SEC-001-034` | `SEC-TEST-001-012`, `SEC-TEST-001-023`, `TEST-001-030` |
+| 5.3.1 | L1 | Parcial | No hay archivos subidos, pero `web-static` **sí sirve el directorio estático** detrás de Envoy: debe demostrarse que ninguno se ejecuta como código de servidor —sin CGI, FastCGI ni SSI— y que autoindex está deshabilitado | `SEC-001-025`, `SEC-001-033` | `SEC-TEST-001-023` |
+| 5.3.2 | L1 | **Aplica** | Envoy enruta y `web-static` resuelve solicitudes a archivos del directorio estático: path traversal, segmentos codificados y normalizaciones ambiguas se rechazan en ambas capas. Además, los destinos de OTLP y de carga se construyen desde allowlists validadas antes de conectar, nunca desde datos de la solicitud, que es la parte SSRF del requisito | `SEC-001-017`, `SEC-001-029`, `SEC-001-034` | `SEC-TEST-001-012`, `SEC-TEST-001-023`, `TEST-001-030` |
 
 #### V6 Authentication — 13 requisitos L1
 
@@ -2237,10 +2378,20 @@ contrato o artefactos no son migraciones de datos de aplicación.
 
 ## Rollout y rollback
 
-0. Requisito previo de etapa SDD: `security.md` y `contracts/openapi.yaml`
-   1.1.0-draft reaprobados, SPEC-001 de vuelta en `Design Approved`, este plan
-   aprobado y `tasks.md` aprobado. Sin esos cuatro registros no se inicia
-   ninguno de los pasos siguientes.
+0. Requisito previo de etapa SDD: conservar las aprobaciones vigentes de
+   `security.md` y `contracts/openapi.yaml` 1.1.0. `ADR-0003` fue aceptado y
+   aprobado independientemente por el Product Owner el `2026-10-01`; después,
+   este plan `1.0.1` fue aprobado mediante un acto independiente. En ese
+   momento, SPEC-001 pasó de `Design Approved` a `Plan Approved` y `tasks.md`
+   1.0.2 permanecía en `Draft`, con aprobación `Pendiente`. Posteriormente,
+   el Product Owner aprobó `tasks.md` 1.0.2 mediante otro acto independiente
+   el `2026-10-01`; SPEC-001 está ahora en `Ready for Implementation`, que
+   representa únicamente disponibilidad documental y no autoriza ejecutar
+   tareas. `TASK-001-001` no fue reanudada y ninguna tarea fue completada.
+   Reanudar `TASK-001-001` y avanzar SPEC-001 a `In Progress` requieren una
+   autorización posterior e independiente. Ninguna otra tarea puede iniciarse
+   automáticamente por efecto de esas aprobaciones sin autorización conforme
+   al gobierno vigente; la implementación continúa pausada.
 1. Local: checkout limpio, configuración validada, redes/límites inspeccionados,
    arranque y tests; comprobar separación health público/ready operacional, las
    fases y cotas de timeout con su deadline total, y la taxonomía cerrada de
@@ -2271,14 +2422,15 @@ no alteración silenciosa de contrato/diseño. Sin migración o rollback de dato
 | Cardinalidad creciente | Catálogos finitos, presupuesto y prueba de series | Atributo nuevo o más de 10000 series | Bloquear export/config y corregir instrumentación |
 | Pérdida o tormenta de logs | Colas acotadas, conciliación, canal obligatorio separado y supervisor | Pendientes crecientes/fallo explícito o recepción incierta | Retirar readiness, parar promoción/carga y activar operador |
 | Evidencia falsa de rendimiento | Perturbación de sensores, dos ejecuciones y datos válidos | CPU/RSS constantes, gaps o resultados inconsistentes | Invalidar informe; no inferir capacidad |
-| Exposición de ready/catálogo/evidencia | Deny by default, redes separadas y prueba exterior | Ruta/puerto/artefacto accesible indebidamente | Bloquear promoción y retirar exposición |
+| Exposición de ready/catálogo/evidencia/`web-static` | Deny by default, redes separadas y prueba exterior | Ruta/puerto/artefacto accesible indebidamente, o acceso directo a `web-static` | Bloquear promoción y retirar exposición |
+| Fallback SPA captura `/ready` | Guardia pública explícita antes del catch-all, prueba exterior de ausencia de ruta y prueba directa de que NGINX no crea una operación de API | `GET /ready` público devuelve 200, llega al origen de estáticos o se comporta como readiness | Bloquear G4/G8 y corregir rutas antes de exponer |
 | Supply chain | Pins, revisión, sandbox, SBOM y escaneo | SHA/digest desconocido o vulnerabilidad bloqueante | Detener entrega y triage, sin excepción implícita |
 | Sobreajuste temprano de límites | Valores explícitos, presupuestos y escenarios separados | Rechazos normales o memoria saturada en baseline | Recalibrar con evidencia; no eliminar límites |
 | Dependencia accidental de herramientas | Scripts portables, formatos abiertos y contratos normativos | Solo funciona mediante proveedor/servicio particular | Revisar adaptador sin cambiar requisitos |
 | Browser real no disponible | Matriz manual bloqueante complementa Playwright | Safari/iOS/versión anterior sin evidencia | No cerrar aceptación; obtener entorno autorizado |
 | Pérdida total del proceso/canal | Supervisión y conciliación externa; sin prometer durabilidad en RAM | SIGKILL, OOM o hueco de recepción | Registrar ventana incierta y bloquear rollout hasta resolver |
 | Gate obligatorio que no se ejecuta | Manifiesto versionado `tooling/ci/required-gates.yaml` con etapa por gate, job `GC` de completitud dentro del workflow y protección de rama externa verificada por `scripts/ci/verify-required-checks` | Gate ausente, saltado, cancelado, deshabilitado o condicionado; conjunto reportado distinto del declarado; checks requeridos divergentes del manifiesto o sin `GC` | Bloquear la integración; nunca tratar `skipped`, `cancelled` o ausente como satisfactorio |
-| Artefacto normativo pendiente de reaprobación | Estado explícito en `spec.md`, `security.md` y el contrato; G0 verifica que las aprobaciones estén vigentes antes que cualquier otro gate | `security.md` o `contracts/openapi.yaml` 1.1.0-draft siguen pendientes al intentar aprobar el plan, crear `tasks.md` o implementar | Detener la etapa SDD y solicitar la reaprobación explícita al Product Owner |
+| Artefacto normativo pendiente de reaprobación | Estado explícito en `spec.md`, plan y tareas; G0 verifica aprobaciones vigentes antes que cualquier otro gate | `plan.md` 1.0.1 o `tasks.md` 1.0.2 siguen en Draft, o una aprobación protegida deja de estar vigente, al intentar implementar | Detener la etapa SDD y solicitar la aprobación explícita correspondiente |
 | Confusión entre rechazo deliberado y defecto | Taxonomía cerrada 429/413/403/408/502/503/504/500, con 500 reservado a excepción interna no controlada y sin categoría residual de anomalía; métricas con `reason` y `outcome` enumerados | Saturación, admisión fallida, vencimiento de recepción, fallo upstream, vencimiento de upstream o timeout de readiness reportados como 500; reaparición de una categoría «sin causa clasificada» | Corregir la representación antes de promover; no ajustar el contrato para aceptar la conflación |
 | Vencimiento de upstream mal representado | 504 `GATEWAY_TIMEOUT` contratado en ambas operaciones, emitido por el borde al vencer el plazo total de upstream o la ociosidad; 502 para el fallo anterior a encabezados; 429 reservado a frecuencia/admisión y 500 a excepción interna | Un vencimiento reportado como 429, 500, 502 o 503; un fallo de conexión reportado como 504; un cierre de conexión contabilizado como 504 | Bloquear G4; corregir la representación antes de promover, sin reutilizar el código de otra condición |
 | Estado nativo del adaptador escapando al contrato | Traducción de los estados nativos del adaptador a los códigos contratados mediante su configuración de respuestas locales, **seleccionada solo por el indicador de resultado**, nunca por umbrales de duración | Un 503, 404 o 408 con cuerpo ajeno al contrato observable sobre una ruta contratada; una regla de traducción que dependa del tiempo transcurrido | Bloquear G4; corregir la configuración del borde antes de promover |
@@ -2353,17 +2505,20 @@ pregunta abierta:
    idioma no se persiste: vive solo en el estado de la página y una recarga
    vuelve a resolver navegador y fallback.
 
-**Alcance exacto de esta autorización.** Cubre esas dos decisiones de contenido
-y nada más. **No aprueba** este plan, `security.md` ni el contrato, que siguen
-pendientes de aprobación explícita. No se registra fecha ni referencia
-documental de aprobación porque no se ha emitido ninguna: inventarla sería
-fabricar un registro inexistente.
+**Alcance exacto de aquella autorización.** Cubrió esas dos decisiones de
+contenido y nada más; por sí sola no aprobó el plan, `security.md` ni el
+contrato. `security.md` y OpenAPI 1.1.0 fueron aprobados posteriormente el
+`2026-09-25`; este plan reabierto fue aprobado independientemente el
+`2026-10-01`. La autorización de
+aquellas dos decisiones no tenía una fecha ni referencia documental de
+aprobación propia que pudiera inventarse retrospectivamente.
 
-### A. Decisiones resueltas por este borrador, pendientes de aprobación
+### A. Decisiones históricas del borrador 1.0.0, aprobadas el 2026-09-25
 
-No son preguntas abiertas, pero tampoco están autorizadas todavía: la
-aprobación de este plan es lo que las autoriza. Se listan para que la revisión
-las apruebe o las rechace expresamente, en lugar de darlas por acordadas.
+Esta lista conserva el razonamiento del borrador original. Sus decisiones
+quedaron aprobadas con `plan.md` 1.0.0. La nueva topología de `web-static` fue
+aprobada como decisión el `2026-09-30`; este documento revisado fue aprobado
+independientemente el `2026-10-01`.
 
 1. Exponer públicamente solo `GET /health` con su respuesta mínima, sustentado
    en `SEC-001-004`, `SEC-001-029` y `x-public-exposure` del contrato.
@@ -2381,9 +2536,9 @@ las apruebe o las rechace expresamente, en lugar de darlas por acordadas.
    cierre de conexión sin estado HTTP y la interrupción posterior a los
    encabezados, que no se representan con ningún código.
 3. Contratar 504, 502 y 408 en ambas operaciones, que sustituye la declaración
-   anterior de que SPEC-001 no documentaría 504. Requiere la reaprobación del
-   contrato ya pendiente. Incluye **aceptar expresamente** que agrupar UF, UC y
-   UR bajo 502 pierde esa distinción en el código público y la conserva solo en
+   anterior de que SPEC-001 no documentaría 504. Requirió la reaprobación del
+   contrato, registrada el `2026-09-25`. Incluye **aceptar expresamente** que
+   agrupar UF, UC y UR bajo 502 pierde esa distinción en el código público y la conserva solo en
    diagnóstico operacional, y que **UC y UR no fueron observados en el POC**.
 4. El plazo upstream total del borde de 3 s contado desde que la solicitud
    downstream está completamente recibida, con la ociosidad degradada a guarda
@@ -2410,11 +2565,16 @@ las apruebe o las rechace expresamente, en lugar de darlas por acordadas.
 
 ### B. Preguntas materiales todavía abiertas
 
-1. **Reaprobación de artefactos reabiertos.** `security.md` y
-   `contracts/openapi.yaml` 1.1.0-draft están pendientes de reaprobación
-   explícita. Hasta obtenerla, SPEC-001 no vuelve a `Design Approved`, este
-   plan no puede aprobarse, no puede crearse `tasks.md` y no puede comenzar la
-   implementación.
+1. **Aprobación de tareas y reanudación.** Las aprobaciones de `security.md` y
+   `contracts/openapi.yaml` 1.1.0 permanecen vigentes. `ADR-0003` fue aceptado
+   y aprobado independientemente el `2026-10-01`, antes de la aprobación de
+   `plan.md` 1.0.1. Al aprobarse este plan, `tasks.md` 1.0.2-draft requería
+   aprobación independiente y SPEC-001 estaba en `Plan Approved`.
+   Posteriormente, el Product Owner aprobó `tasks.md` 1.0.2 el `2026-10-01` y
+   SPEC-001 volvió a `Ready for Implementation`, solo como disponibilidad
+   documental. `TASK-001-001` no fue reanudada, ninguna tarea fue completada y
+   la implementación sigue pausada; avanzar a `In Progress` y reanudar
+   `TASK-001-001` requieren autorización posterior e independiente.
 2. **Registro normativo del par de contraste del wordmark.** El cálculo está
    hecho y su comprobación fijada: `text.inverse` sobre `color.navigation` da
    `16.6928:1`, muy por encima del umbral, y `TEST-001-046` lo medirá sobre el
@@ -2434,8 +2594,11 @@ en ambas operaciones, con las relaciones de contención y precedencia entre
 plazos fijadas en la sección de plazos. Este plan **no afirma** que esas
 relaciones garanticen la emisión ni la entrega completa de una respuesta antes
 del timeout de 4 s del navegador: **no existe tal garantía end-to-end**.
-Ninguna de las dos sigue bloqueando la preparación del plan; lo que sigue
-bloqueando su aprobación es el punto 1.
+Ninguna de las dos sigue bloqueando la preparación del plan; el bloqueo
+vigente para reanudar `TASK-001-001` es obtener una autorización posterior e
+independiente y registrar expresamente la transición de SPEC-001 desde
+`Ready for Implementation` a `In Progress`. La aprobación de `tasks.md` 1.0.2
+ya ocurrió y no constituye un bloqueo vigente.
 
 ### C. Pendientes verificables de implementación
 
@@ -2481,8 +2644,37 @@ tiene implementación, y ninguna sustituye a `TEST-001-030` ni a
   `Design Approved`, el Product Owner aprobó explícitamente este plan como
   versión `1.0.0`, incluidas sus decisiones arquitectónicas, operacionales, de
   seguridad, observabilidad, pruebas, límites y riesgos documentados.
+- El `2026-09-30`, durante `TASK-001-001`, se confirmó que el filtro
+  `file_server` de Envoy 1.39.1 está [declarado oficialmente incompleto y no
+  apto para producción](https://www.envoyproxy.io/docs/envoy/v1.39.1/api-v3/extensions/filters/http/file_server/v3/file_server.proto).
+  El Product Owner aprobó separar el origen estático en `web-static` NGINX
+  interno, mantener Envoy como único borde y fijar las familias OCI detalladas
+  en este borrador. Se reabre el plan como `1.0.1-draft`; la implementación
+  queda pausada y esta revisión requiere aprobación independiente. La decisión
+  no aprueba la versión ni los digests de NGINX, que resolverá `TASK-001-001`.
+  Se crea `ADR-0003` como borrador obligatorio para esta decisión estructural;
+  su aprobación independiente precede a la del plan. Se corrigen las referencias
+  vigentes al contrato OpenAPI 1.1.0, aprobado el `2026-09-25`, y se precisan
+  en las tareas reabiertas el cierre declarativo del borde, la prueba negativa
+  interna de métodos, los logs de `web-static`, los cuatro servicios y el inicio
+  parcial de `TASK-001-001`. Nada de esto constituye implementación.
+- El `2026-10-01`, después de la aceptación y aprobación independiente de
+  `ADR-0003`, el Product Owner aprobó explícitamente `plan.md` 1.0.1,
+  incluidas sus decisiones arquitectónicas y la topología aceptada en el ADR,
+  sus decisiones operacionales, de seguridad, observabilidad y pruebas, sus
+  límites, presupuestos de recursos, riesgos, rollout y rollback. Esta
+  aprobación cierra la reapertura arquitectónica del plan y permite que
+  SPEC-001 pase de `Design Approved` a `Plan Approved`. `tasks.md` 1.0.2
+  continúa en `Draft` con aprobación pendiente; ninguna tarea se reanudó o
+  completó por este acto y la implementación permanece pausada.
+- El `2026-10-01`, tras la aprobación independiente de `tasks.md` 1.0.2, se
+  sincronizaron las referencias administrativas posteriores: las tareas están
+  aprobadas y SPEC-001 está en `Ready for Implementation` solo como
+  disponibilidad documental. Esta errata no cambia decisiones técnicas ni la
+  versión `1.0.1` o la aprobación vigente de este plan; la implementación
+  continúa pausada.
 
-## Aprobación del plan
+### Aprobación histórica de `plan.md` 1.0.0
 
 - **Estado:** `Aprobado`
 - **Aprobado por:** `Product Owner`
@@ -2492,12 +2684,23 @@ tiene implementación, y ninguna sustituye a `TEST-001-030` ni a
   decisiones arquitectónicas, operacionales, de seguridad, observabilidad,
   pruebas, límites y riesgos documentados.
 
-**Prerrequisitos de esta aprobación:** `security.md` fue reaprobado,
+**Prerrequisitos de aquella aprobación:** `security.md` fue reaprobado,
 `contracts/openapi.yaml` 1.1.0 fue aprobado y SPEC-001 volvió a
 `Design Approved` antes de la aprobación independiente de este plan. Las
 menciones anteriores al estado de borrador y a aprobaciones pendientes
 documentan su preparación y no sustituyen el estado vigente registrado aquí.
 
-Esta aprobación no autoriza crear `tasks.md` ni implementar código. Avanzar a
-`Ready for Implementation` y crear tareas requiere una autorización posterior
-e independiente; la implementación requiere además las tareas aprobadas.
+Aquella aprobación no autorizaba por sí sola crear `tasks.md` ni implementar
+código; las autorizaciones posteriores constan en el historial de SPEC-001.
+
+## Aprobación del plan
+
+- **Estado:** `Aprobado`
+- **Aprobado por:** `Product Owner`
+- **Fecha:** `2026-10-01`
+- **Comentario o referencia:** Aprobación explícita del Product Owner del
+  `2026-10-01` de `plan.md` 1.0.1, posterior a la aprobación independiente de
+  `ADR-0003`, incluidas las decisiones arquitectónicas, la topología aceptada
+  en ese ADR, las decisiones operacionales, de seguridad, observabilidad y
+  pruebas, los límites, presupuestos de recursos, riesgos, rollout y rollback.
+  Esta aprobación documental no autoriza implementar ni aprueba `tasks.md` 1.0.2.

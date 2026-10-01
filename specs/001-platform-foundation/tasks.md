@@ -5,20 +5,35 @@ Referencia: `SPEC-001`
 ## Metadata
 
 - **SPEC:** `SPEC-001 Platform Foundation`
-- **Versión:** `1.0.1`
+- **Versión:** `1.0.2`
 - **Estado documental:** `Approved`
 - **Responsable:** `Equipo de desarrollo`
-- **Fecha:** `2026-09-29`
+- **Fecha:** `2026-09-30`
 
 ## Alcance y límites conservados
 
-Este documento descompone el trabajo autorizado por `plan.md` 1.0.0 y no
-modifica ningún artefacto aprobado. Su versión `1.0.0` fue aprobada
+Esta versión realinea el trabajo de `plan.md` 1.0.1, aprobado por el Product
+Owner el `2026-10-01`, tras la decisión arquitectónica del `2026-09-30`
+registrada en `ADR-0003`, aceptado y aprobado independientemente el
+`2026-10-01`. SPEC-001 estaba en `Plan Approved` inmediatamente antes de la
+aprobación independiente de `tasks.md` 1.0.2; mediante este acto vuelve a
+`Ready for Implementation` solo como disponibilidad documental.
+La versión `1.0.0` de tareas fue aprobada
 explícitamente por el Product Owner el `2026-09-25` y `SPEC-001` avanzó a
-`Ready for Implementation`. Esa aprobación es **documental**: ninguna tarea ha
-sido ejecutada, ningún elemento de la checklist de cierre está marcado y
-comenzar la implementación o avanzar a `In Progress` requiere una autorización
-posterior e independiente.
+`Ready for Implementation`. Después, `TASK-001-001` se inició parcialmente
+bajo autorización y produjo únicamente como trabajo parcial local
+`docs/supply-chain/resolved-versions.md` y
+`docs/supply-chain/provenance-notes.md`. Ambos archivos siguen incompletos y
+sin seguimiento, quedan excluidos del futuro commit documental y no forman
+parte de `tasks.md` 1.0.2 ni del conjunto versionado aprobado. No constituyen
+evidencia final ni satisfacen el criterio de cierre; sus rutas siguen previstas
+para `TASK-001-001`, y completarlos e incorporarlos requieren reanudar esa tarea
+mediante autorización posterior e independiente. `TASK-001-001` no se completó:
+sigue en `Pendiente`. Ninguna tarea posterior fue ejecutada,
+ningún elemento de la checklist de cierre está marcado y ninguna evidencia
+parcial satisface un criterio de cierre. La implementación permanece pausada;
+ninguna tarea queda autorizada para ejecución y reanudar `TASK-001-001`
+exige autorización posterior independiente.
 
 - Solo existen dos operaciones HTTP de aplicación: `GET /health` y `GET /ready`.
   Ninguna tarea crea una tercera operación, una ruta de métricas, una ruta de
@@ -36,6 +51,9 @@ posterior e independiente.
   verificación pertenece a la prueba de implementación del borde.
 - Ninguna tarea instala dependencias, escribe código ni altera aprobaciones por
   el hecho de estar enumerada aquí.
+- Envoy es el único límite público; `web-static` NGINX, interno y sin puerto
+  publicado, sirve Vite e Inter. La topología central tiene cuatro servicios.
+  El fallback SPA nunca puede capturar `/ready` ni añadir una operación API.
 
 ## Reglas de ownership de evidencia
 
@@ -61,7 +79,7 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 
 ### TASK-001-001 — Resolver versiones, hashes, digests y procedencia iniciales
 
-- **Descripción:** Resolver y registrar las versiones exactas, los hashes de distribución aplicables, los digests OCI de `linux/amd64` aplicables y la procedencia de Python 3.14, Node 24.21 LTS, pnpm 12.5, uv, FastAPI, Pydantic, Uvicorn, Ruff, Pyright, pytest, React, TypeScript, Vite, Tailwind, Storybook, Vitest, Testing Library, Playwright, axe-core, i18next, react-i18next, la tipografía Inter, OpenTelemetry SDK, OTLP y Collector, k6, OCI, Compose, Envoy, Gitleaks, Trivy, Syft, ESLint y Prettier. Esta tarea es el control temprano de resolución: no inventa workflows ni acciones CI futuras y no cierra la prueba negativa final de inventario.
+- **Descripción:** Resolver y registrar las versiones exactas, los hashes de distribución aplicables, los digests OCI de `linux/amd64` aplicables y la procedencia de Python 3.14, Node 24.21 LTS, pnpm 12.5, uv, FastAPI, Pydantic, Uvicorn, Ruff, Pyright, pytest, React, TypeScript, Vite, Tailwind, Storybook, Vitest, Testing Library, Playwright, axe-core, i18next, react-i18next, la tipografía Inter, OpenTelemetry SDK, OTLP y Collector, k6, OCI, Compose, Envoy, **NGINX oficial Debian 13 `trixie` para `web-static`**, Gitleaks, Trivy, Syft, ESLint y Prettier. Fijar las bases aprobadas `docker.io/library/python:3.14.7-slim-trixie` para builder/runtime backend y fixtures, `docker.io/library/node:24.21.0-trixie-slim` para builder Vite y catálogo, y `mcr.microsoft.com/playwright:v1.63.0-noble` para browser CI, cada una por hijo `linux/amd64`; resolver la versión estable exacta de `docker.io/library/nginx:<VERSION_ESTABLE_EXACTA>-trixie` y sus digests de índice e hijo. Ningún tarball de lenguaje sustituye la fijación de su base OCI. Esta tarea es el control temprano de resolución: no inventa workflows ni acciones CI futuras y no cierra la prueba negativa final de inventario.
 - **Plataforma OCI:** `linux/amd64` es la única plataforma inicial soportada por SPEC-001. Todo digest por plataforma exigido aquí corresponde a `linux/amd64`; `linux/arm64` y las demás plataformas quedan fuera del alcance inicial y requieren una decisión y cambio posteriores. Para una imagen multiarch se registrarán por separado la referencia o tag de origen, el digest del índice OCI cuando exista y el digest del manifiesto hijo `linux/amd64`, junto con fuente oficial, fecha y comando reproducible de resolución; el tag de origen no se usará como fijación inmutable.
 - **Política de acciones CI:** Ninguna acción puede usar una referencia flotante. La tarea que introduzca o modifique cada workflow seleccionará sus acciones, fijará cada una por SHA completo de commit y registrará su procedencia. `TASK-001-001` no selecciona acciones que todavía no existen; la prueba negativa final de inventario conserva su owner aprobado.
 - **Rutas previstas:** `docs/supply-chain/resolved-versions.md`; `docs/supply-chain/provenance-notes.md`
@@ -69,9 +87,9 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 - **Dependencias:** Ninguna
 - **Paralelizable:** `No`
 - **Pruebas planificadas relacionadas:** `SEC-TEST-001-029`
-- **Verificación requerida:** Comprobaciones documentales reproducibles de `docs/supply-chain/resolved-versions.md` y `docs/supply-chain/provenance-notes.md`: ninguna fila queda con referencia flotante, `latest`, rango abierto, tag mutable como fijación ni campo irresuelto, y la versión ejercitada en el POC del borde no se registra como versión de entrega. La evidencia producida será consumida posteriormente por `G0` y `G1`; esos gates aún no existen en este punto del DAG y ejecutarlos no es precondición de cierre de esta tarea. Sus tareas de implementación verificarán ambos archivos.
+- **Verificación requerida:** Comprobaciones documentales reproducibles de `docs/supply-chain/resolved-versions.md` y `docs/supply-chain/provenance-notes.md`: ninguna fila queda con procedencia ausente, artefacto vacío, hash falso o divergente, referencia flotante, `latest`, rango abierto, tag mutable como fijación, «no aplica» sin evidencia, hijo `linux/amd64` ausente, ID duplicado o ausente ni campo irresuelto. Incluir casos negativos que provoquen cada fallo, también para las bases OCI aprobadas. La versión ejercitada en el POC del borde no se registra como versión de entrega. La evidencia será consumida después por `G0` y `G1`; esos gates aún no existen en este punto del DAG y ejecutarlos no es precondición de cierre de esta tarea. Sus tareas de implementación verificarán ambos archivos.
 - **Evidencia final a cargo:** La matriz asigna el cierre a otra tarea
-- **Criterio observable de cierre:** Cada tecnología aplicable de la matriz aprobada de `plan.md`, salvo las acciones CI concretas aún no introducidas por un workflow, queda registrada con versión exacta, hash de distribución cuando exista un artefacto descargable aplicable, digest OCI del manifiesto `linux/amd64` cuando exista una imagen aplicable, procedencia oficial, fecha y método reproducible. Cada «no aplica» identifica el tipo de evidencia evaluado —hash de distribución, digest OCI u otro campo exigido—, la razón técnica concreta, una fuente oficial o una comprobación reproducible sobre el artefacto oficial, su URL o identificador de procedencia cuando corresponda, el comando o método de inspección cuando sea aplicable y la fecha de comprobación. Sin evidencia verificable suficiente, el elemento queda pendiente y la tarea no puede cerrarse. Ambos archivos superan la validación documental reproducible y no contienen referencias flotantes. Cualquier elemento pendiente o realmente bloqueado mantiene la tarea abierta: «pendiente bloqueante» no satisface el cierre.
+- **Criterio observable de cierre:** Cada tecnología aplicable de la matriz del plan nuevamente aprobado, salvo las acciones CI concretas aún no introducidas por un workflow, queda registrada con versión exacta, hash de distribución cuando exista un artefacto descargable aplicable, digest OCI del manifiesto `linux/amd64` cuando exista una imagen aplicable, procedencia oficial, fecha y método reproducible. Quedan incluidas Python/Node como bases OCI además de sus tarballs, NGINX estable `trixie` y Playwright de CI; Storybook y fixtures reutilizan las bases fijadas. Cada «no aplica» identifica el tipo de evidencia evaluado —hash de distribución, digest OCI u otro campo exigido—, la razón técnica concreta, una fuente oficial o una comprobación reproducible sobre el artefacto oficial, su URL o identificador de procedencia cuando corresponda, el comando o método de inspección cuando sea aplicable y la fecha de comprobación. Sin evidencia verificable suficiente, el elemento queda pendiente y la tarea no puede cerrarse. Ambos archivos superan la validación documental reproducible y los casos negativos anteriores; no contienen referencias flotantes. Cualquier elemento pendiente o realmente bloqueado mantiene la tarea abierta: «pendiente bloqueante» no satisface el cierre.
 - **Estado:** `Pendiente`
 
 ### TASK-001-002 — Crear el workspace pnpm raíz y los scripts reproducibles
@@ -115,7 +133,7 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 
 ### TASK-001-005 — Crear el inventario versionado de recursos y su validador temprano
 
-- **Descripción:** Crear el inventario versionado de dependencias de producción, desarrollo y prueba, acciones de CI, imágenes OCI, addons del catálogo, fuentes, iconos y demás recursos visuales, con procedencia, uso y forma de fijación, más el validador que CI ejecutará. Es el control temprano de resolución; la prueba negativa final pertenece a otra tarea.
+- **Descripción:** Crear el inventario versionado de dependencias de producción, desarrollo y prueba, acciones de CI, **bases OCI de Python, Node, NGINX y Playwright, además de Envoy, Collector y k6 y las imágenes derivadas de backend, edge y `web-static`**, addons del catálogo, fuentes, iconos y demás recursos visuales, con procedencia, uso y forma de fijación, más el validador que CI ejecutará. Storybook y fixtures declaran reutilización de bases, sin fingir «no aplica» para las imágenes que ejecutan. Es el control temprano de resolución; la prueba negativa final pertenece a otra tarea.
 - **Rutas previstas:** `docs/supply-chain/resource-inventory.md`; `tooling/supply-chain/inventory.schema.json`; `scripts/ci/verify-resource-inventory`
 - **Referencias:** `REQ-001-010`, `REQ-001-014`, `REQ-001-022`, `REQ-001-023`, `REQ-001-025`, `NFR-001-002`, `NFR-001-009`, `NFR-001-020`, `AC-001-020`, `AC-001-029`, `SEC-001-021`, `SEC-001-022`
 - **Dependencias:** `TASK-001-001`, `TASK-001-002`
@@ -342,15 +360,15 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 
 ### TASK-001-022 — Crear la entrada pública del borde
 
-- **Descripción:** Configurar el listener público de Envoy que sirve los estáticos del frontend y la coincidencia exacta `GET /health`, sin prefijos, normalizaciones ambiguas ni passthrough genérico. `/ready` **no figura** en su mapa de rutas: la respuesta de ausencia de ruta pertenece al transporte de esa entrada y no es un resultado de la operación de readiness.
-- **Rutas previstas:** `tooling/envoy/listeners/public.yaml`; `tooling/envoy/routes/public-routes.yaml`; `tooling/envoy/clusters/backend.yaml`
+- **Descripción:** Definir declarativamente el único listener público de Envoy, terminador TLS y proxy, sin usar el filtro `file_server`. El orden de rutas trata `/ready` explícitamente como ausente **antes** del catch-all estático, dirige la coincidencia exacta `GET /health` al cluster backend y `GET`/`HEAD` de Vite e Inter al cluster `web-static`; no introduce passthrough genérico a la API. Declarar el reenvío hacia `web-static` del `X-Request-ID` final validado por la cadena del borde, nunca del candidato temporal. Envoy conserva correlación, control de acceso, límites, timeouts, rate limiting y respuestas locales; las rutas desconocidas, codificadas o ambiguas no amplían el mapa API. El comportamiento real del fallback SPA y de las redes se cierra después.
+- **Rutas previstas:** `tooling/envoy/listeners/public.yaml`; `tooling/envoy/routes/public-routes.yaml`; `tooling/envoy/clusters/backend.yaml`; `tooling/envoy/clusters/web-static.yaml`; `tests/edge/test_public_route_config.py`
 - **Referencias:** `REQ-001-002`, `REQ-001-005`, `REQ-001-010`, `REQ-001-016`, `AC-001-009`, `AC-001-030`, `SEC-001-004`, `SEC-001-028`, `SEC-001-029`
 - **Dependencias:** `TASK-001-001`, `TASK-001-010`
 - **Paralelizable:** `No`
 - **Pruebas planificadas relacionadas:** `TEST-001-030`
-- **Verificación requerida:** `G4`; la codificación de segmentos, las rutas desconocidas y los métodos no permitidos se resuelven como transporte y no reutilizan un código contratado.
+- **Verificación requerida:** Validación estática de listeners, clusters, orden de rutas y forwarding del identificador, más pruebas aisladas con fixtures sintéticos: `/ready` queda fuera del mapa público antes del catch-all; solo la coincidencia exacta `GET /health` selecciona el cluster backend; las rutas estáticas seleccionan el cluster `web-static`; codificaciones, rutas desconocidas y métodos no permitidos no amplían la API. `G4` consumirá después esta configuración; no se exige ejecutar ese gate para cerrar esta tarea ni se afirma una imagen, red o despliegue real.
 - **Evidencia final a cargo:** La matriz asigna el cierre a otra tarea
-- **Criterio observable de cierre:** la entrada pública sirve estáticos y health, y ninguna reescritura, alias o redirección alcanza `/ready`.
+- **Criterio observable de cierre:** La configuración declarativa de listeners, clusters y rutas supera la validación estática y las pruebas aisladas, con exclusión explícita de `/ready` antes del fallback. Esta tarea no cierra accesibilidad real de `web-static`, ausencia de exposición pública, conectividad entre contenedores, flujo extremo a extremo ni precedencia real de `/ready`: la red y exposición corresponden a `TASK-001-060`, y el enrutamiento real y fallback a `TASK-001-070`.
 - **Estado:** `Pendiente`
 
 ### TASK-001-023 — Crear la entrada operacional del borde con deny by default
@@ -630,7 +648,7 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 
 ### TASK-001-044 — Crear el catálogo ejecutable con variantes, estados y N/A justificados
 
-- **Descripción:** Crear el catálogo Storybook ejecutable local y en CI, con la misma versión de diseño, historias versionadas del inventario de tokens, de cada componente mínimo, de cada variante, de la matriz completa de estados `default`, `hover`, `focus-visible`, `active`, `disabled`, `loading`, `success`, `warning` y `error` con cada N/A justificado expresamente, un ejemplo ejecutable por estado aplicable, ejemplos en español e inglés con expansión y pseudolocalización, y la variante `on-navigation` del selector junto al token `color.focus.on-dark`, que no pueden quedar sin ejemplo. Los addons se limitan a los imprescindibles inventariados, los recursos son locales y el catálogo queda excluido del artefacto productivo.
+- **Descripción:** Crear el catálogo Storybook ejecutable local y en CI **sobre la base Node `24.21.0-trixie-slim` ya fijada para el builder Vite**, con la misma versión de diseño, historias versionadas del inventario de tokens, de cada componente mínimo, de cada variante, de la matriz completa de estados `default`, `hover`, `focus-visible`, `active`, `disabled`, `loading`, `success`, `warning` y `error` con cada N/A justificado expresamente, un ejemplo ejecutable por estado aplicable, ejemplos en español e inglés con expansión y pseudolocalización, y la variante `on-navigation` del selector junto al token `color.focus.on-dark`, que no pueden quedar sin ejemplo. Los addons se limitan a los imprescindibles inventariados, los recursos son locales y el catálogo queda excluido de preview, staging y del artefacto productivo; no introduce otra base OCI externa.
 - **Rutas previstas:** `packages/ui/.storybook/main.ts`; `packages/ui/.storybook/preview.ts`; `packages/ui/src/tokens/tokens.stories.tsx`; `packages/ui/src/primitives/*.stories.tsx`; `packages/ui/src/components/*.stories.tsx`; `docs/design/state-matrix.md`
 - **Referencias:** `REQ-001-024`, `REQ-001-025`, `NFR-001-020`, `AC-001-045`, `AC-001-049`, `SEC-001-019`, `SEC-001-020`, `SEC-001-033`, `SEC-001-034`, `SEC-001-036`
 - **Dependencias:** `TASK-001-043`
@@ -695,15 +713,15 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 
 ### TASK-001-049 — Preparar el arnés Playwright y los contextos fijados
 
-- **Descripción:** Preparar el arnés Playwright con contextos fijados por navegador, versión, sistema operativo o plataforma, viewport, escala y versión de fuente, reloj y datos congelados, espera de fuentes y layout, desactivación del motion no esencial, viewports canónicos `375×812`, `768×1024`, `1280×800` y `1920×1080` más `320 px` y los bordes `599/600`, `1023/1024` y `1439/1440`, e interceptores de consola, red, DOM y bundles con centinelas sintéticos.
-- **Rutas previstas:** `tests/e2e/playwright.config.ts`; `tests/e2e/fixtures/browser-context.ts`; `tests/e2e/fixtures/sentinels.ts`; `tests/e2e/fixtures/viewports.ts`
+- **Descripción:** Preparar el arnés Playwright sobre la imagen oficial `mcr.microsoft.com/playwright:v1.63.0-noble` fijada por digest hijo `linux/amd64`; verificar y documentar el Node efectivo dentro de esa imagen y asegurar Node `24.21.0` para toda herramienta del proyecto. Fijar contextos por navegador, versión, sistema operativo o plataforma, viewport, escala y versión de fuente, reloj y datos congelados, espera de fuentes y layout, desactivación del motion no esencial, viewports canónicos `375×812`, `768×1024`, `1280×800` y `1920×1080` más `320 px` y los bordes `599/600`, `1023/1024` y `1439/1440`, e interceptores de consola, red, DOM y bundles con centinelas sintéticos.
+- **Rutas previstas:** `tests/e2e/playwright.config.ts`; `tests/e2e/fixtures/browser-context.ts`; `tests/e2e/fixtures/sentinels.ts`; `tests/e2e/fixtures/viewports.ts`; `docs/evidence/browsers/playwright-runtime.md`
 - **Referencias:** `REQ-001-011`, `NFR-001-011`, `NFR-001-019`, `AC-001-021`, `AC-001-028`, `SEC-001-019`, `SEC-001-031`
 - **Dependencias:** `TASK-001-044`, `TASK-001-045`, `TASK-001-046`, `TASK-001-047`, `TASK-001-048`
 - **Paralelizable:** `No`
 - **Pruebas planificadas relacionadas:** `TEST-001-021`
 - **Verificación requerida:** `G7`; el arnés usa exclusivamente datos sintéticos y registra navegador, versión, plataforma y viewport en cada ejecución.
 - **Evidencia final a cargo:** La matriz asigna el cierre a otra tarea
-- **Criterio observable de cierre:** dos ejecuciones sin cambios producen el mismo contexto declarado y el mismo conjunto de casos.
+- **Criterio observable de cierre:** dos ejecuciones sin cambios producen el mismo contexto declarado y el mismo conjunto de casos; la evidencia registra el Node efectivo del contenedor y comprueba Node `24.21.0` para las herramientas del proyecto.
 - **Estado:** `Pendiente`
 
 ### TASK-001-050 — Cerrar el E2E de idioma, selector, indisponibilidad y solicitud real
@@ -814,20 +832,20 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 
 ### TASK-001-058 — Construir las imágenes OCI mínimas
 
-- **Descripción:** Construir las imágenes OCI multi-stage de backend y de frontend con su límite HTTP, con usuario numérico no root, filesystem raíz de solo lectura, capacidades eliminadas, `no-new-privileges`, tmpfs acotado para temporales, sin socket del motor, sin montajes amplios del host, sin herramientas de desarrollo y sin secretos en imagen, capas, metadata ni configuración frontend. `Inter` y los estáticos locales entran en la imagen; Storybook, las pruebas y las fuentes no necesarias quedan fuera de la imagen de entrega.
-- **Rutas previstas:** `apps/backend/Dockerfile`; `apps/frontend/Dockerfile`; `tooling/oci/edge.Dockerfile`; `tooling/oci/collector.Dockerfile`; `tests/security/test_image_inspection.py`
+- **Descripción:** Construir backend multietapa con builder y runtime desde `docker.io/library/python:3.14.7-slim-trixie`: las herramientas de compilación temporales quedan solo en builder. Construir Vite con builder `docker.io/library/node:24.21.0-trixie-slim` y copiar únicamente Vite e Inter a la imagen final `web-static`, derivada de `docker.io/library/nginx:<VERSION_ESTABLE_EXACTA>-trixie` fijada en `TASK-001-001`. Envoy conserva imagen separada como único borde, sin filtro `file_server`; el Collector conserva su base resuelta. Todas las imágenes de entrega ejecutan con usuario numérico no root, filesystem raíz de solo lectura, capacidades eliminadas, `no-new-privileges`, tmpfs acotado para temporales, sin socket del motor, montajes amplios del host, herramientas de desarrollo o secretos en imagen, capas, metadata o configuración frontend. En `web-static`: puerto interno no privilegiado, un worker, autoindex apagado, `GET`/`HEAD` únicamente, logs stdout/stderr sin secretos, ninguna función dinámica innecesaria ni proxy al backend. Storybook, pruebas y fuentes no necesarias quedan fuera de imágenes productivas.
+- **Rutas previstas:** `apps/backend/Dockerfile`; `apps/frontend/Dockerfile`; `tooling/oci/edge.Dockerfile`; `tooling/oci/web-static.Dockerfile`; `tooling/oci/collector.Dockerfile`; `tooling/nginx/nginx.conf`; `tooling/nginx/static.conf`; `tests/security/test_image_inspection.py`; `tests/security/test_web_static_isolation.py`
 - **Referencias:** `REQ-001-014`, `NFR-001-008`, `NFR-001-009`, `AC-001-029`, `AC-001-031`, `AC-001-032`, `SEC-001-021`, `SEC-001-025`
 - **Dependencias:** `TASK-001-013`, `TASK-001-022`, `TASK-001-045`
 - **Paralelizable:** `No`
 - **Pruebas planificadas relacionadas:** `TEST-001-029`, `SEC-TEST-001-016`, `SEC-TEST-001-003`
-- **Verificación requerida:** `G8`; la inspección de configuración e imagen falla ante usuario root efectivo, privilegios indebidos, capacidades innecesarias o un secreto centinela.
+- **Verificación requerida:** `G8`; inspeccionar las cuatro imágenes centrales y sus bases hijas `linux/amd64`; fallar ante usuario root efectivo, privilegios indebidos, capacidades innecesarias, compiladores en runtime, secreto centinela, archivos fuente o catálogo en `web-static`, rootfs escribible sin justificación, autoindex habilitado o filtro `file_server` de Envoy.
 - **Evidencia final a cargo:** `SEC-TEST-001-016`
-- **Criterio observable de cierre:** el usuario efectivo, los permisos y las capas se inspeccionan y el artefacto con privilegios indebidos no es entregable.
+- **Criterio observable de cierre:** el usuario efectivo, permisos, capas, contenido estático, puerto interno, único worker y `tmpfs` necesarios se inspeccionan; `web-static` no tiene superficie API y ningún artefacto con privilegios indebidos es entregable.
 - **Estado:** `Pendiente`
 
 ### TASK-001-059 — Verificar la cuota efectiva de runtime y OCI
 
-- **Descripción:** Declarar e inspeccionar automáticamente los límites **efectivos** del contenedor y del runtime, no solo su documentación: backend con **1 vCPU**, **512 MiB**, **un worker por réplica** y 128 PIDs; límite HTTP con frontend estático con 0.5 vCPU y 128 MiB; Collector con 0.5 vCPU y 256 MiB; generador de carga separado que no comparte cuota con el backend; y el **techo de buffers de 16 MiB por proceso** con agregado `P × 16 MiB`. La inspección lee la cuota efectiva del contenedor o del runtime y la contrasta con las fórmulas agregadas `P = R × W`, `activos_total = P × C`, `espera_total = P × Q`, `conexiones_total = R × K`, `canales_OTLP = P`, `exports_en_vuelo = 2 × P`, `buffers_backend_MiB = P × (L + T)` y `mem_backend_MiB = R × 512`. El gate **falla si la cuota efectiva diverge** de la declarada, si `W` es distinto de 1 sin la revisión exigida o si el consumo por proceso o agregado excede el techo, aunque la memoria total de la réplica lo admitiera.
+- **Descripción:** Declarar e inspeccionar automáticamente los límites **efectivos** del contenedor y runtime de los cuatro servicios centrales, no solo su documentación: backend **1 vCPU**, **512 MiB**, un worker por réplica y 128 PIDs; edge Envoy 0.5 vCPU y 128 MiB; `web-static` **0.25 vCPU**, **64 MiB** y un worker; Collector 0.5 vCPU y 256 MiB; generador de carga separado del backend; y techo de buffers de 16 MiB por proceso backend y `P × 16 MiB` agregado. Contrastar las cuotas efectivas con `P = R × W`, `activos_total = P × C`, `espera_total = P × Q`, `conexiones_total = R × K`, `canales_OTLP = P`, `exports_en_vuelo = 2 × P`, `buffers_backend_MiB = P × (L + T)`, `mem_backend_MiB = R × 512`, `CPU_runtime = R × 1 + E × 0.5 + S × 0.25 + O × 0.5` y `RAM_runtime_MiB = R × 512 + E × 128 + S × 64 + O × 256`, con E, S y O réplicas Envoy, `web-static` y Collector inicialmente iguales a 1. El gate **falla si cualquier cuota efectiva diverge**, si un worker excede lo aprobado sin revisión o si el consumo backend por proceso o agregado supera su techo aunque la memoria total lo admita.
 - **Rutas previstas:** `tooling/oci/runtime-limits.yaml`; `scripts/ci/verify-runtime-quota`; `apps/backend/src/platform_foundation/infrastructure/config/budget.py`; `apps/backend/tests/integration/test_effective_quota.py`
 - **Referencias:** `REQ-001-014`, `REQ-001-020`, `NFR-001-008`, `NFR-001-016`, `AC-001-029`, `AC-001-038`, `SEC-001-015`, `SEC-001-016`, `SEC-001-025`, `SEC-001-030`
 - **Dependencias:** `TASK-001-021`, `TASK-001-058`
@@ -835,25 +853,25 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 - **Pruebas planificadas relacionadas:** `TEST-001-029`, `TEST-001-038`
 - **Verificación requerida:** `G4`, `G8`; documentar el presupuesto no basta: la comprobación lee la cuota efectiva y rechaza la divergencia antes del arranque.
 - **Evidencia final a cargo:** La matriz asigna el cierre a otra tarea
-- **Criterio observable de cierre:** la cuota efectiva de CPU, memoria, PIDs y workers coincide con la declarada y el techo de buffers se comprueba por proceso y en agregado.
+- **Criterio observable de cierre:** la cuota efectiva de CPU, memoria, PIDs y workers de los cuatro servicios coincide con la declarada, incluido `web-static` con 0.25 vCPU, 64 MiB y un worker; el techo de buffers backend se comprueba por proceso y en agregado.
 - **Estado:** `Pendiente`
 
 ### TASK-001-060 — Ensamblar el entorno local con Compose
 
-- **Descripción:** Ensamblar el entorno local reproducible con backend, límite HTTP con frontend estático y Collector en redes separadas, backend y OTLP **sin puertos publicados**, solo el listener público del borde en loopback, el listener operacional en la red privada, credenciales TLS operacionales montadas solo en los procesos que las necesitan, perfiles explícitos y apagados para el catálogo y la carga, imágenes por digest y plataforma explícita, y sin volumen de datos de aplicación ni servicio de base de datos o caché.
-- **Rutas previstas:** `tooling/compose/compose.yaml`; `tooling/compose/networks.yaml`; `tooling/compose/profiles/catalog.yaml`; `tooling/compose/profiles/load.yaml`; `scripts/dev/up.sh`; `scripts/dev/down.sh`
+- **Descripción:** Ensamblar el entorno local reproducible de **cuatro servicios centrales**: backend, edge Envoy, `web-static` NGINX y Collector. Solo el listener público de Envoy se publica en loopback; el operacional permanece en red privada. Backend, `web-static` y OTLP carecen de puertos publicados, y solo Envoy alcanza `web-static` por una red interna dedicada o segmentación equivalente. El orden público excluye `/ready` antes del catch-all SPA; health exacto llega al backend y los estáticos a `web-static`. Credenciales TLS operacionales montadas solo en procesos que las necesitan; perfiles explícitos y apagados para catálogo y carga, imágenes por digest hijo `linux/amd64` y plataforma explícita, sin volumen de datos de aplicación ni servicio de DB/cache.
+- **Rutas previstas:** `tooling/compose/compose.yaml`; `tooling/compose/networks.yaml`; `tooling/compose/profiles/catalog.yaml`; `tooling/compose/profiles/load.yaml`; `scripts/dev/up.sh`; `scripts/dev/down.sh`; `tests/operational/test_web_static_network.py`
 - **Referencias:** `REQ-001-003`, `REQ-001-014`, `REQ-001-015`, `NFR-001-001`, `NFR-001-008`, `NFR-001-010`, `AC-001-005`, `AC-001-029`, `SEC-001-002`, `SEC-001-025`, `SEC-001-029`, `SEC-001-033`
 - **Dependencias:** `TASK-001-021`, `TASK-001-023`, `TASK-001-039`, `TASK-001-058`, `TASK-001-059`
 - **Paralelizable:** `No`
 - **Pruebas planificadas relacionadas:** `TEST-001-005`, `TEST-001-029`
 - **Verificación requerida:** `G7`, `G8`; health es alcanzable por el listener público y readiness solo desde el plano operacional; el catálogo y la carga no arrancan por defecto.
 - **Evidencia final a cargo:** La matriz asigna el cierre a otra tarea
-- **Criterio observable de cierre:** el entorno arranca desde los scripts documentados sin pasos manuales no documentados y sin publicar el backend.
+- **Criterio observable de cierre:** los cuatro servicios arrancan desde los scripts documentados sin pasos manuales; backend, `web-static` y Collector no son alcanzables directamente desde redes externas, y `/ready` público no devuelve la SPA.
 - **Estado:** `Pendiente`
 
 ### TASK-001-061 — Ejecutar los contenedores en local y en CI
 
-- **Descripción:** Construir y ejecutar los artefactos documentados de backend y frontend en el entorno local y en CI, verificando la pantalla inicial, health y readiness a través de sus entradas correspondientes, el cierre controlado ante SIGTERM con retirada de readiness, drenaje y registro de pendientes, y los límites efectivos, sin requerir ninguna API propietaria del proveedor de despliegue.
+- **Descripción:** Construir las imágenes derivadas previstas y ejecutar los cuatro servicios documentados —backend, edge Envoy, `web-static` y Collector— en local y CI, consumiendo las imágenes oficiales fijadas cuando corresponda. Verificar pantalla inicial, Vite e Inter desde `web-static` solo a través de Envoy, health y readiness por sus entradas respectivas, ausencia de acceso directo a backend/`web-static`/OTLP, cierre controlado ante SIGTERM con retirada de readiness, drenaje y registro de pendientes, y límites efectivos, sin API propietaria del proveedor de despliegue.
 - **Rutas previstas:** `tests/operational/test_container_runtime.py`; `docs/evidence/containers/`
 - **Referencias:** `REQ-001-014`, `NFR-001-008`, `AC-001-029`, `SEC-001-021`, `SEC-001-025`
 - **Dependencias:** `TASK-001-058`, `TASK-001-060`
@@ -861,7 +879,7 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 - **Pruebas planificadas relacionadas:** `TEST-001-029`
 - **Verificación requerida:** `G8`; la ejecución local y la de CI producen la misma evidencia y ninguna depende de una API propietaria.
 - **Evidencia final a cargo:** `TEST-001-029`
-- **Criterio observable de cierre:** los dos artefactos se construyen, inician y permiten verificar pantalla, health y readiness en ambos entornos.
+- **Criterio observable de cierre:** los cuatro servicios centrales —backend, Envoy, `web-static` y OpenTelemetry Collector— inician en local y CI y permiten verificar pantalla, health y readiness por sus entradas aprobadas. La evidencia distingue las imágenes derivadas construidas por el repositorio de las bases e imágenes oficiales consumidas; no presenta los cuatro servicios como cuatro artefactos necesariamente construidos aquí.
 - **Estado:** `Pendiente`
 
 ### TASK-001-062 — Restringir el Collector y su plano operacional
@@ -879,7 +897,7 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 
 ### TASK-001-063 — Cerrar el acceso a métricas desde contextos autorizados y denegados
 
-- **Descripción:** Configurar e inspeccionar el acceso operacional a métricas y ejecutarlo **en local y en CI** sobre el entorno ejecutable: la instrumentación emite, el Collector recibe por OTLP en la red interna, los límites de cardinalidad están activos y un cliente **no autorizado** que intenta leer o recibir series desde el contexto público es denegado sin obtener series ni metadata. No existe ruta pública, y ser poco conocida no se considera segura. Esta ejecución local y de CI es **evidencia preliminar** y **prerrequisito** del cierre posterior: la evidencia final de `SEC-TEST-001-007` se agrega en `TASK-001-068`, que suma a esta los contextos de preview y staging exigidos por `plan.md`.
+- **Descripción:** Configurar e inspeccionar el acceso operacional a métricas y ejecutarlo **en local y en CI** sobre el entorno de cuatro servicios: la instrumentación emite, el Collector recibe por OTLP en la red interna, los límites de cardinalidad están activos y un cliente **no autorizado** que intenta leer o recibir series desde el contexto público es denegado sin obtener series ni metadata. `web-static` no incorpora `/metrics` ni exposición operacional pública; cualquier métrica necesaria usa el canal interno aprobado. Ser poco conocida no hace segura una ruta. Esta ejecución local y de CI es **evidencia preliminar** y **prerrequisito** del cierre posterior: la evidencia final de `SEC-TEST-001-007` se agrega en `TASK-001-068`, que suma los contextos de preview y staging exigidos por `plan.md`.
 - **Rutas previstas:** `tests/operational/test_metrics_access.py`; `docs/evidence/metrics-access.md`
 - **Referencias:** `REQ-001-018`, `AC-001-034`, `AC-001-036`, `SEC-001-013`, `SEC-001-029`
 - **Dependencias:** `TASK-001-021`, `TASK-001-060`, `TASK-001-062`
@@ -906,6 +924,7 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 ### TASK-001-065 — Crear los fixtures upstream deterministas del borde
 
 - **Descripción:** Crear los upstream sintéticos deterministas y las rutas de prueba concretas que provocan, de forma reproducible y por separado, cada condición exigida: `UF` por **rechazo activo de conexión**; `UF` por **timeout de conexión**; `UC` por terminación de la conexión upstream **antes de encabezados**; `UR` por **reset upstream antes de encabezados**; `UT` por upstream que no responde dentro del plazo upstream total; `SI` por upstream que agota la ociosidad del flujo antes de comprometer encabezados; `503 {"status":"not_ready"}` emitido por la aplicación; respuesta **iniciada y luego interrumpida** tras comprometer encabezados; recepción lenta de una solicitud ya encaminada para el 408; cuerpo por encima del presupuesto para el 413; exceso de frecuencia para el 429; y acceso operacional denegado para el 403. Cada fixture expone su condición mediante un puerto o una ruta propia del perfil de pruebas, usa exclusivamente datos sintéticos y no añade ninguna operación al contrato.
+  Si el perfil ejecuta fixtures Python en contenedor, reutiliza la base fijada `docker.io/library/python:3.14.7-slim-trixie`; no introduce otra base externa ni abre una ruta pública de producto.
 - **Rutas previstas:** `tests/fixtures/upstream/reject_connect.py`; `tests/fixtures/upstream/hang_connect.py`; `tests/fixtures/upstream/close_before_headers.py`; `tests/fixtures/upstream/reset_before_headers.py`; `tests/fixtures/upstream/no_response_within_total.py`; `tests/fixtures/upstream/idle_stream.py`; `tests/fixtures/upstream/not_ready_503.py`; `tests/fixtures/upstream/interrupt_after_headers.py`; `tests/fixtures/client/slow_body_sender.py`; `tests/fixtures/client/oversized_body.py`; `tests/fixtures/client/rate_burst.py`; `tooling/compose/profiles/edge-fixtures.yaml`
 - **Referencias:** `REQ-001-010`, `REQ-001-016`, `REQ-001-020`, `AC-001-030`, `AC-001-039`, `SEC-001-019`, `SEC-001-028`, `SEC-001-031`
 - **Dependencias:** `TASK-001-035`, `TASK-001-036`, `TASK-001-037`, `TASK-001-038`, `TASK-001-060`
@@ -919,6 +938,7 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 ### TASK-001-066 — Preparar los entornos no productivos de preview y staging
 
 - **Descripción:** Materializar los entornos de **preview** y de **staging** a partir del contrato de configuración aprobado, **sin seleccionar ni inventar un proveedor**: para cada entorno se preparan y despliegan los artefactos ya construidos —imágenes por digest, configuración del borde, backend integrado y Collector— y se materializan **dos entradas distintas**. La **entrada pública** escucha en una interfaz enrutable con TLS y sirve los estáticos y la coincidencia exacta `GET /health`, con `/ready` **ausente de su mapa de rutas**, sin prefijo, alias, reescritura, redirección ni passthrough que pueda alcanzarlo. La **entrada operacional** se enlaza a una dirección **no enrutable públicamente** del segmento privado del entorno, sin puerto publicado, sin registro DNS público y sin asociación a un balanceador o ingress con alcance a Internet, sirve exclusivamente `GET /ready`, fija `edge.operational.public_exposure` en `false` y aplica el inventario de principales con tipo, origen y vencimiento junto a una allowlist no vacía que no abarca todo el espacio de direcciones. El acceso se decide **deny by default** sobre la **identidad del peer validado**, descartando y reconstruyendo las cabeceras de forwarding recibidas del cliente, y sin introducir login, API key ni sesión de producto. El validador común se ejecuta y **falla cerrado antes del bind**. La tarea publica los endpoints y las referencias de entorno que la batería consumirá y registra la evidencia de despliegue y de configuración **por entorno y por entrada**. Preview y staging no se convierten en producto ni añaden infraestructura productiva.
+  En ambos entornos se despliegan **cuatro servicios centrales** por digest: backend, edge Envoy, `web-static` NGINX y Collector. Envoy termina TLS y hace proxy de estáticos al origen interno; solo él puede alcanzar `web-static` por la red segmentada. Este origen no tiene puerto publicado ni DNS público. La guarda de ausencia de `/ready` se evalúa antes del catch-all SPA y un healthcheck interno de `web-static` no crea operación pública.
 - **Rutas previstas:** `tooling/environments/preview/edge-config.yaml`; `tooling/environments/preview/operational-inventory.yaml`; `tooling/environments/staging/edge-config.yaml`; `tooling/environments/staging/operational-inventory.yaml`; `scripts/deploy/prepare-nonprod`; `docs/evidence/nonprod/preview/`; `docs/evidence/nonprod/staging/`
 - **Referencias:** `REQ-001-006`, `REQ-001-014`, `REQ-001-018`, `NFR-001-008`, `AC-001-010`, `AC-001-029`, `AC-001-030`, `SEC-001-005`, `SEC-001-013`, `SEC-001-025`, `SEC-001-029`, `SEC-001-030`
 - **Dependencias:** `TASK-001-013`, `TASK-001-022`, `TASK-001-023`, `TASK-001-024`, `TASK-001-039`, `TASK-001-058`, `TASK-001-059`, `TASK-001-060`
@@ -926,7 +946,7 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 - **Pruebas planificadas relacionadas:** `TEST-001-010`, `SEC-TEST-001-007`
 - **Verificación requerida:** `G4`, `G8`; ninguna comprobación depende de un proveedor concreto, la configuración se resuelve sobre el inventario antes del despliegue y una configuración inválida impide que el entorno acepte tráfico.
 - **Evidencia final a cargo:** La matriz asigna el cierre a otra tarea
-- **Criterio observable de cierre:** preview y staging quedan preparados con sus dos entradas, su evidencia de configuración y sus referencias de entorno, y `/ready` no figura en ningún mapa público de ninguno de los dos.
+- **Criterio observable de cierre:** preview y staging quedan preparados con cuatro servicios, sus dos entradas, redes aisladas, cuotas efectivas y evidencia por entorno; `web-static` no tiene acceso directo externo y `/ready` no figura en ningún mapa público ni cae en el fallback SPA.
 - **Estado:** `Pendiente`
 
 ### TASK-001-067 — Ejecutar la batería de conformidad de `/ready` en preview y staging
@@ -959,7 +979,7 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 
 ### TASK-001-069 — Cerrar los headers, CORS y el contenido seguro
 
-- **Descripción:** Ejecutar y cerrar, sobre el entorno ejecutable y la build de producción, la verificación de headers y CORS: preflight y solicitud desde origen, método o header no permitido rechazados; combinación de origen comodín con credenciales rechazada; CSP, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `frame-ancestors` y HSTS efectivos; ausencia de headers de versión detallada, directorios listables, TRACE y archivos fuente, de configuración o de mapas sensibles; y la política separada del catálogo limitada a local y CI.
+- **Descripción:** Ejecutar y cerrar, sobre el entorno ejecutable y la build de producción servida por Envoy → `web-static`, la verificación de headers y CORS: preflight y solicitud desde origen, método o header no permitido rechazados; combinación de origen comodín con credenciales rechazada; CSP, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `frame-ancestors` y HSTS efectivos; `Content-Type` y caché correctos para HTML, archivos Vite y fuentes Inter; ausencia de headers de versión detallada, directorios listables, TRACE y archivos fuente, de configuración o de mapas sensibles; y política separada del catálogo limitada a local y CI.
 - **Rutas previstas:** `tests/e2e/specs/headers-cors.spec.ts`; `tests/operational/test_cors_preflight.py`; `docs/evidence/headers/`
 - **Referencias:** `REQ-001-001`, `REQ-001-002`, `AC-001-001`, `AC-001-002`, `AC-001-003`, `SEC-001-026`, `SEC-001-034`
 - **Dependencias:** `TASK-001-039`, `TASK-001-049`, `TASK-001-060`
@@ -973,14 +993,15 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 ### TASK-001-070 — Cerrar la conformidad del borde y del contrato
 
 - **Descripción:** Ejecutar y cerrar las **dos mitades** de la verificación de contrato sobre el despliegue real, atravesando **ambas superficies**. La primera compara el esquema generado en memoria con el contrato normalizado: operaciones exactas, códigos, `required`, `additionalProperties` y headers. La segunda ejercita el límite HTTP y comprueba que el conjunto de estados y cuerpos realmente observables coincide exactamente con el contratado: health 200, 408, 413, 429, 500, 502 y 504 en la entrada pública, y ready 200, 403, 408, 413, 429, 500, 502, 503 y 504 en la entrada operacional, sin ningún estado ni cuerpo fuera del contrato. El 502 se verifica en **cuatro casos separados** —`UF` por rechazo, `UF` por timeout, `UC` y `UR`— y el 504 en sus dos causas `UT` y `SI`; el 408 con recepción lenta de una solicitud ya encaminada; el 413 con cuerpo excesivo; el 429 por frecuencia; el 403 por acceso operacional denegado. Cada caso verifica por separado **estado, cuerpo, schema, `X-Request-ID`, su igualdad exacta con `request_id`, el flag de resultado del borde, el detalle operacional de la causa, el emisor, la preservación del 503 y la ausencia de remapeo después de comprometer encabezados**. Un cierre de conexión sin respuesta se registra como transporte y nunca como 504; una respuesta interrumpida tras encabezados comprometidos conserva el estado emitido con cuerpo incompleto y no es 502 ni 504; `GET /ready` contra la entrada pública obtiene ausencia de ruta y no se registra como respuesta de readiness. `UC` y `UR` se conservan como **previstas por contrato y no observadas en el POC**, y esta es su prueba de implementación. Aquí se cierra además la correlación observada de extremo a extremo: el identificador válido se conserva idéntico y el ausente, inválido, de 129 caracteres o repetido y unido por coma se sustituye íntegro, en la respuesta upstream y en las respuestas 403, 408, 413, 429, 502 y 504.
-- **Rutas previstas:** `apps/backend/tests/contract/test_openapi_schema.py`; `tests/edge/test_contract_conformance.py`; `tests/edge/test_correlation_end_to_end.py`; `tooling/contract/openapi-comparator.py`; `docs/evidence/contract/`
+  Ejercitar además la ruta pública de archivos Vite e Inter a través de Envoy → `web-static`: `GET`/`HEAD` funcionan sin abrir otra operación API, el fallback SPA no captura `/ready` ni lo convierte en 200, y un cliente exterior no alcanza el origen interno directamente. Una sonda efímera y controlada en el segmento interno de Envoy envía al contenedor `web-static` real al menos `POST` y `PUT` directamente y comprueba que **NGINX** los rechaza; la sonda no permanece en el despliegue. Probar por separado la entrada pública y atribuir su rechazo a **Envoy**, sin usarlo como sustituto de la prueba interna. La configuración de NGINX no usa CGI, FastCGI, SSI, autoindex ni proxy al backend.
+- **Rutas previstas:** `apps/backend/tests/contract/test_openapi_schema.py`; `tests/edge/test_contract_conformance.py`; `tests/edge/test_correlation_end_to_end.py`; `tests/edge/test_static_and_ready_routing.py`; `tests/edge/test_web_static_methods.py`; `tooling/contract/openapi-comparator.py`; `docs/evidence/contract/`
 - **Referencias:** `REQ-001-008`, `REQ-001-010`, `REQ-001-016`, `NFR-001-005`, `AC-001-014`, `AC-001-016`, `AC-001-030`, `SEC-001-006`, `SEC-001-007`, `SEC-001-028`
 - **Dependencias:** `TASK-001-014`, `TASK-001-028`, `TASK-001-030`, `TASK-001-031`, `TASK-001-032`, `TASK-001-033`, `TASK-001-034`, `TASK-001-035`, `TASK-001-036`, `TASK-001-037`, `TASK-001-038`, `TASK-001-060`, `TASK-001-065`, `TASK-001-067`, `TASK-001-068`
 - **Paralelizable:** `No`
 - **Pruebas planificadas relacionadas:** `TEST-001-014`, `TEST-001-016`, `TEST-001-030`, `SEC-TEST-001-020`
-- **Verificación requerida:** `G4`; un estado observable no documentado, una operación divergente o un ejemplo con centinela hacen fallar el gate, y la comparación nunca sobrescribe el contrato para aceptar diferencias.
+- **Verificación requerida:** `G4`; un estado observable no documentado, una operación divergente o un ejemplo con centinela hacen fallar el gate, y la comparación nunca sobrescribe el contrato para aceptar diferencias. La prueba de métodos usa cliente dentro de la red interna contra `web-static` y evidencia el emisor NGINX; el rechazo del listener público se verifica aparte como control de Envoy. `TASK-001-060` ya materializa la imagen y la red antes de esta prueba.
 - **Evidencia final a cargo:** `TEST-001-014`, `TEST-001-016`, `TEST-001-030`, `SEC-TEST-001-020`
-- **Criterio observable de cierre:** cada respuesta contratada llega **completa** al cliente, con su estado, cuerpo, schema y correlación verificados en las dos entradas.
+- **Criterio observable de cierre:** cada respuesta API contratada llega **completa** al cliente, con estado, cuerpo, schema y correlación verificados en las dos entradas; los estáticos proceden de `web-static` a través de Envoy, `/ready` público nunca devuelve la SPA y la evidencia separa el rechazo directo de `POST`/`PUT` por NGINX del rechazo público por Envoy.
 - **Estado:** `Pendiente`
 
 ### TASK-001-071 — Cerrar la admisión, los plazos y la saturación
@@ -999,6 +1020,7 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 ### TASK-001-072 — Validar el presupuesto agregado y el techo de buffers
 
 - **Descripción:** Ejecutar y cerrar el cálculo reproducible del consumo agregado al variar réplicas y workers y contrastarlo con la cuota efectiva inspeccionada: sockets, colas, activos, espera, canales OTLP, exports en vuelo, CPU, RAM y buffers. La comprobación verifica por separado que el cálculo real coincide con las fórmulas y que el **techo de 16 MiB por proceso** y el **agregado `P × 16 MiB`** rechazan toda configuración excedida, además de rechazar valores no positivos o no finitos, colas sin cota, timeouts incompatibles con el cierre, cadenas de plazos que dejen de ser estrictamente crecientes, cabeceras insuficientes para probar un identificador de 129 caracteres, límites del host inferiores al agregado, `R` fuera de presupuesto, `W` distinto de 1 sin revisión y procesos no inventariados.
+  Incluir explícitamente `web-static` en el presupuesto de cuatro servicios y verificar `CPU_runtime = R × 1 + E × 0.5 + S × 0.25 + O × 0.5` y `RAM_runtime_MiB = R × 512 + E × 128 + S × 64 + O × 256`, con E, S, O inicialmente 1; exigir cuota efectiva de 0.25 vCPU, 64 MiB y un worker del origen estático, y fallar ante divergencia.
 - **Rutas previstas:** `apps/backend/tests/integration/test_aggregate_budget.py`; `apps/backend/src/platform_foundation/infrastructure/config/budget.py`; `docs/evidence/budget/`
 - **Referencias:** `REQ-001-020`, `NFR-001-016`, `AC-001-038`, `SEC-001-015`, `SEC-001-016`, `SEC-001-030`
 - **Dependencias:** `TASK-001-008`, `TASK-001-021`, `TASK-001-059`, `TASK-001-060`
@@ -1006,7 +1028,7 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 - **Pruebas planificadas relacionadas:** `TEST-001-038`
 - **Verificación requerida:** `G4`; la configuración excedida falla **antes del bind** y las pruebas ejercitan también el rechazo.
 - **Evidencia final a cargo:** `TEST-001-038`
-- **Criterio observable de cierre:** el cálculo agregado y el techo por proceso se comprueban por separado y ambos rechazan la combinación que los excede.
+- **Criterio observable de cierre:** el cálculo agregado de los cuatro servicios, incluida la cuota de `web-static`, y el techo de buffers backend por proceso se comprueban por separado y rechazan cualquier combinación que los exceda.
 - **Estado:** `Pendiente`
 
 ### TASK-001-073 — Demostrar el procesamiento stateless entre réplicas
@@ -1037,15 +1059,15 @@ prueba y ejecutarla de forma preliminar, pero no cierra su evidencia.
 
 ### TASK-001-075 — Configurar la reducción y conciliación del logging de alto volumen
 
-- **Descripción:** Configurar la reducción explícita y medible del logging: INFO individual por request exitoso deshabilitado con su supresión contabilizada; para errores no clasificados como seguridad, hasta 10 por segundo y tipo estable, con las tres primeras muestras por ventana de 10 s conservando request ID válido, el resto agregado por evento y resultado y un máximo de 16 tipos catalogados; seguridad **sin sampling**; cada evento observado con exactamente un destino contable; y la identidad de conciliación por ventana `pendientes_iniciales + observados = emitidos + agregados + suprimidos + pendientes_finales + fallos_explícitos`.
-- **Rutas previstas:** `apps/backend/src/platform_foundation/infrastructure/logging/reduction.py`; `apps/backend/src/platform_foundation/infrastructure/logging/reconciliation.py`; `apps/backend/tests/integration/test_log_reduction.py`
+- **Descripción:** Configurar la reducción explícita y medible del logging: INFO individual por request exitoso deshabilitado con su supresión contabilizada; para errores no clasificados como seguridad, hasta 10 por segundo y tipo estable, con las tres primeras muestras por ventana de 10 s conservando request ID válido, el resto agregado por evento y resultado y un máximo de 16 tipos catalogados; seguridad **sin sampling**; cada evento observado con exactamente un destino contable; y la identidad de conciliación por ventana `pendientes_iniciales + observados = emitidos + agregados + suprimidos + pendientes_finales + fallos_explícitos`. Configurar los logs reales de acceso y error de NGINX hacia stdout/stderr e ingerirlos mediante la captura supervisada aprobada. El borde reenvía a `web-static` únicamente el `X-Request-ID` final validado, cuando existe contexto de solicitud; NGINX lo incorpora solo tras recibirlo, y la prueba coteja su igualdad entre Envoy y NGINX. Aplicar el esquema cerrado cuando el registro sea estructurado, la reducción y conciliación también a `web-static`, sin cuerpos, secretos, valores hostiles ni URL cruda o query sensible. Conservar en Envoy los rechazos públicos y distinguir registros de backend, Envoy y `web-static`.
+- **Rutas previstas:** `apps/backend/src/platform_foundation/infrastructure/logging/reduction.py`; `apps/backend/src/platform_foundation/infrastructure/logging/reconciliation.py`; `apps/backend/tests/integration/test_log_reduction.py`; `tooling/nginx/logging.conf`; `tooling/logging/web-static-stdout.yaml`; `tests/operational/test_web_static_logs.py`; `docs/evidence/logging/web-static/`
 - **Referencias:** `REQ-001-021`, `AC-001-040`, `SEC-001-009`, `SEC-001-010`, `SEC-001-015`
 - **Dependencias:** `TASK-001-015`, `TASK-001-016`, `TASK-001-074`
 - **Paralelizable:** `No`
 - **Pruebas planificadas relacionadas:** `TEST-001-040`, `SEC-TEST-001-010`
-- **Verificación requerida:** `G4`; las muestras de agregados son referencias y no duplican el conteo, y el muestreo jamás oculta el total de errores.
+- **Verificación requerida:** `G4`; capturar la salida real de NGINX y la recepción del canal supervisado para solicitudes estáticas exitosas, rutas ausentes y métodos rechazados directamente por `web-static`; comprobar emisor, correlación propagada desde Envoy cuando aplique, supresión/agrupación de éxitos, reducción y conciliación de errores por ventana, y ausencia de secretos, candidatos hostiles, cuerpos y datos prohibidos. Las muestras de agregados son referencias y no duplican el conteo; el muestreo jamás oculta el total de errores. La captura distingue los logs de backend, Envoy y NGINX.
 - **Evidencia final a cargo:** La matriz asigna el cierre a otra tarea
-- **Criterio observable de cierre:** la conciliación cuadra por ventana y «emitido» significa aceptado por stdout, no almacenado durablemente.
+- **Criterio observable de cierre:** la evidencia de acceso y error de NGINX real incluye los tres escenarios estáticos, demuestra ingestión, correlación disponible, sanitización y reducción/conciliación por ventana junto a los otros componentes; «emitido» significa aceptado por stdout, no almacenado durablemente. Evidencia exclusiva del backend no cierra esta tarea.
 - **Estado:** `Pendiente`
 
 ### Fase 7: CI, gates, cadena de suministro y promoción
@@ -1123,7 +1145,7 @@ exigido para PR, con `G10` después de `G9` dentro de la promoción.
 
 ### TASK-001-081 — Implementar G5
 
-- **Descripción:** Implementar el gate de build y catálogo: build productiva del frontend **sin catálogo**, ejecución aislada del catálogo sin secretos, sin montajes amplios del host y sin egress por defecto, obtención de dependencias en fase separada verificada, cobertura completa de historias, resolución de referencias e inventario de addons, y concordancia de versión entre diseño, catálogo e implementación.
+- **Descripción:** Implementar el gate de build y catálogo: build Vite sobre la base Node fijada y copia de sus archivos e Inter a `web-static`, **sin catálogo ni Node en imágenes productivas**; ejecución aislada del catálogo reutilizando esa misma base Node sin secretos, montajes amplios del host ni egress por defecto; obtención de dependencias en fase separada verificada, cobertura completa de historias, resolución de referencias e inventario de addons, y concordancia de versión entre diseño, catálogo e implementación.
 - **Rutas previstas:** `scripts/ci/gate-g5`; `tooling/ci/catalog-sandbox.yaml`
 - **Referencias:** `REQ-001-025`, `NFR-001-002`, `NFR-001-020`, `AC-001-020`, `AC-001-049`, `SEC-001-019`, `SEC-001-020`, `SEC-001-033`, `SEC-001-034`, `SEC-001-036`
 - **Dependencias:** `TASK-001-044`, `TASK-001-057`, `TASK-001-076`, `TASK-001-077`
@@ -1149,7 +1171,7 @@ exigido para PR, con `G10` después de `G9` dentro de la promoción.
 
 ### TASK-001-083 — Implementar G7
 
-- **Descripción:** Implementar el gate de E2E y regresión visual con contextos fijados y evidencia de la matriz real de navegadores, manteniendo separados el gate funcional y el visual y exigiendo revisión explícita de los diffs.
+- **Descripción:** Implementar el gate de E2E y regresión visual con `mcr.microsoft.com/playwright:v1.63.0-noble` fijada por digest hijo `linux/amd64`, verificación del Node efectivo y Node 24.21.0 para herramientas del proyecto, contextos fijados y evidencia de la matriz real de navegadores, manteniendo separados el gate funcional y el visual y exigiendo revisión explícita de los diffs.
 - **Rutas previstas:** `scripts/ci/gate-g7`
 - **Referencias:** `REQ-001-011`, `REQ-001-027`, `NFR-001-002`, `NFR-001-011`, `NFR-001-021`, `AC-001-020`, `AC-001-028`, `AC-001-051`, `AC-001-052`, `SEC-001-019`, `SEC-001-023`, `SEC-001-035`
 - **Dependencias:** `TASK-001-055`, `TASK-001-056`, `TASK-001-076`, `TASK-001-077`
@@ -1162,7 +1184,7 @@ exigido para PR, con `G10` después de `G9` dentro de la promoción.
 
 ### TASK-001-084 — Implementar G8
 
-- **Descripción:** Implementar el gate de contenedores y SBOM: construcción OCI, escaneo de imágenes, SBOM SPDX o CycloneDX con dependencias transitivas, fuentes, iconos, addons y procedencia, metadatos que enlazan commit completo, pipeline o run y digest de imagen, y prueba de ejecución que inspecciona usuario efectivo, permisos y capas.
+- **Descripción:** Implementar el gate de contenedores y SBOM para las cuatro imágenes centrales, incluida la derivada NGINX `web-static`: construcción OCI, escaneo de bases e imágenes finales, SBOM SPDX o CycloneDX con dependencias transitivas, Vite, Inter, fuentes, iconos, addons y procedencia, metadatos que enlazan commit completo, pipeline o run y digest de imagen, y prueba de ejecución que inspecciona usuario efectivo, permisos, cuotas, capas y ausencia de exposición directa de `web-static`.
 - **Rutas previstas:** `scripts/ci/gate-g8`; `tooling/ci/syft.yaml`; `tooling/ci/sbom-policy.yaml`
 - **Referencias:** `REQ-001-010`, `REQ-001-014`, `NFR-001-002`, `NFR-001-008`, `NFR-001-009`, `AC-001-020`, `AC-001-029`, `AC-001-032`, `SEC-001-021`, `SEC-001-023`, `SEC-001-025`
 - **Dependencias:** `TASK-001-058`, `TASK-001-061`, `TASK-001-076`, `TASK-001-077`, `TASK-001-078`
@@ -1292,7 +1314,7 @@ exigido para PR, con `G10` después de `G9` dentro de la promoción.
 
 ### TASK-001-094 — Cerrar el catálogo ejecutable y su exclusión del artefacto productivo
 
-- **Descripción:** Ejecutar y cerrar la verificación del catálogo: disponible localmente por el procedimiento documentado, validado en CI, declarando su versión y conteniendo todas las categorías de tokens, los componentes mínimos, las variantes, las matrices de estados y los ejemplos permitidos, con todas sus referencias resolviendo contra contratos existentes y sin navegación, journeys ni datos de negocio. Se ejercita además el acceso desde un contexto no autorizado y la inclusión accidental en un artefacto productivo, que se deniegan y hacen fallar la verificación del artefacto antes de la entrega.
+- **Descripción:** Ejecutar y cerrar la verificación del catálogo sobre la base Node compartida fijada: disponible solo localmente por el procedimiento documentado y en CI aislado, excluido de preview y staging, declarando su versión y conteniendo todas las categorías de tokens, componentes mínimos, variantes, matrices de estados y ejemplos permitidos, con referencias a contratos existentes y sin navegación, journeys ni datos de negocio. Se ejercita el acceso desde un contexto no autorizado y la inclusión accidental en un artefacto productivo; ambos se deniegan y hacen fallar la verificación antes de la entrega.
 - **Rutas previstas:** `tests/security/test_catalog_isolation.py`; `tests/e2e/specs/catalog-validation.spec.ts`; `docs/evidence/catalog/`
 - **Referencias:** `REQ-001-025`, `NFR-001-020`, `AC-001-049`, `SEC-001-019`, `SEC-001-020`, `SEC-001-029`, `SEC-001-030`, `SEC-001-033`, `SEC-001-034`
 - **Dependencias:** `TASK-001-044`, `TASK-001-058`, `TASK-001-081`, `TASK-001-084`, `TASK-001-090`, `TASK-001-093`
@@ -1305,7 +1327,7 @@ exigido para PR, con `G10` después de `G9` dentro de la promoción.
 
 ### TASK-001-095 — Cerrar el bloqueo por vulnerabilidad crítica o alta explotable
 
-- **Descripción:** Ejecutar y cerrar, una vez incorporados **imágenes, inventario, addons, recursos de CI y el catálogo aplicable**, la prueba negativa de vulnerabilidad: una dependencia, imagen, dependencia UI, addon, fuente, icono o recurso visual con hallazgo crítico o alto explotable bloquea la entrega sin aceptación implícita, y sin hallazgos bloqueantes el control finaliza satisfactoriamente. Los plazos de remediación documentados se comprueban: crítico y alto antes de promover con triage en 24 h, medio con análisis en 7 días y corrección propuesta en 30, y bajo en 90.
+- **Descripción:** Ejecutar y cerrar, una vez incorporados **imágenes, inventario, addons, recursos de CI y el catálogo aplicable**, incluido `web-static` y su base NGINX Debian 13, la prueba negativa de vulnerabilidad: una dependencia, imagen, dependencia UI, addon, fuente, icono o recurso visual con hallazgo crítico o alto explotable bloquea la entrega sin aceptación implícita, y sin hallazgos bloqueantes el control finaliza satisfactoriamente. Los plazos de remediación documentados se comprueban: crítico y alto antes de promover con triage en 24 h, medio con análisis en 7 días y corrección propuesta en 30, y bajo en 90.
 - **Rutas previstas:** `tests/security/test_vulnerability_gate.py`; `tests/security/fixtures/vulnerable/`; `docs/evidence/security/vulnerabilities/`
 - **Referencias:** `REQ-001-010`, `REQ-001-014`, `REQ-001-023`, `REQ-001-025`, `NFR-001-009`, `AC-001-032`, `AC-001-044`, `AC-001-049`, `SEC-001-021`, `SEC-001-022`
 - **Dependencias:** `TASK-001-044`, `TASK-001-058`, `TASK-001-078`, `TASK-001-084`, `TASK-001-090`, `TASK-001-093`, `TASK-001-094`
@@ -1331,7 +1353,7 @@ exigido para PR, con `G10` después de `G9` dentro de la promoción.
 
 ### TASK-001-097 — Cerrar el inventario, la procedencia y la fijación inmutable
 
-- **Descripción:** Ejecutar y cerrar la prueba negativa final de cadena de suministro, una vez incorporados **todos** los recursos: dependencias de producción, de desarrollo y de prueba, Storybook y sus addons, Playwright y sus navegadores, Envoy, las imágenes OCI, las acciones y herramientas de CI, el catálogo, las herramientas de carga, el Collector y las dependencias de frontend y de backend. La prueba verifica y **bloquea** cada caso por separado: recurso **no inventariado**; procedencia **ausente o no verificable**; **referencia flotante** donde el flujo de entrega exige fijación inmutable verificable; y **actualización sin la revisión requerida**. No se admite aceptación implícita ni excepción por tratarse de una herramienta de desarrollo, prueba o catálogo. Esta prueba negativa final es distinta del control temprano de resolución e inventario, que ya existe desde la primera fase.
+- **Descripción:** Ejecutar y cerrar la prueba negativa final de cadena de suministro, una vez incorporados **todos** los recursos: dependencias de producción, desarrollo y prueba, Storybook y addons, Playwright y navegadores, bases oficiales Python/Node/NGINX/Playwright, Envoy, imágenes OCI derivadas —incluido `web-static`—, acciones y herramientas de CI, catálogo, carga, Collector y dependencias de frontend/backend. Storybook y fixtures declaran la reutilización de bases fijadas. La prueba verifica y **bloquea** cada caso por separado: recurso **no inventariado**; procedencia **ausente o no verificable**; **referencia flotante** donde el flujo de entrega exige fijación inmutable verificable; y **actualización sin la revisión requerida**. No se admite aceptación implícita ni excepción por tratarse de herramienta de desarrollo, prueba o catálogo. Esta prueba negativa final es distinta del control temprano de resolución e inventario de la primera fase.
 - **Rutas previstas:** `tests/security/test_resource_inventory_gate.py`; `tests/security/fixtures/supply-chain/`; `docs/evidence/supply-chain/`
 - **Referencias:** `REQ-001-010`, `REQ-001-014`, `REQ-001-022`, `REQ-001-023`, `REQ-001-025`, `NFR-001-002`, `NFR-001-008`, `NFR-001-009`, `NFR-001-020`, `AC-001-020`, `AC-001-029`, `AC-001-032`, `AC-001-043`, `AC-001-044`, `AC-001-049`, `SEC-001-021`
 - **Dependencias:** `TASK-001-001`, `TASK-001-003`, `TASK-001-004`, `TASK-001-005`, `TASK-001-022`, `TASK-001-044`, `TASK-001-049`, `TASK-001-058`, `TASK-001-062`, `TASK-001-078`, `TASK-001-084`, `TASK-001-093`, `TASK-001-094`, `TASK-001-095`, `TASK-001-096`
@@ -2001,8 +2023,39 @@ El grafo tiene **dos componentes débilmente conexas**:
   `1.0.1-draft` fue su reapertura correctiva. Ninguna tarea fue ejecutada
   durante la reapertura ni por este acto de aprobación: las 104 permanecen
   `Pendiente`.
+- El `2026-09-30`, la investigación de `TASK-001-001` detectó que el servicio
+  directo de estáticos mediante el filtro `file_server` de Envoy no es apto
+  para producción. El Product Owner aprobó mantener Envoy como único límite
+  público, agregar `web-static` NGINX interno, fijar las familias OCI de
+  Python, Node y Playwright, reutilizarlas en catálogo/fixtures y resolver la
+  versión estable exacta y los digests de NGINX en `TASK-001-001`. Esta
+  decisión reabre `plan.md` como `1.0.1-draft` y las presentes tareas como
+  `1.0.2-draft`. Ambos documentos requieren aprobación independiente; la
+  implementación está pausada y las 104 tareas, incluida `TASK-001-001`,
+  permanecen `Pendiente`. Los archivos de evidencia de cadena de suministro
+  existentes permanecen incompletos y sin aprobar. Esta revisión crea
+  `ADR-0003` como borrador de aprobación pendiente y exige aprobarlo antes del
+  plan y, después, las tareas. Precisa que OpenAPI 1.1.0 ya está aprobado desde
+  el `2026-09-25`; limita `TASK-001-022` al cierre declarativo, asigna la
+  prueba negativa interna de métodos a `TASK-001-070`, integra los logs reales
+  de NGINX en `TASK-001-075` y corrige en `TASK-001-061` el cierre de los cuatro
+  servicios. `TASK-001-001` fue iniciada parcialmente bajo autorización y solo
+  produjo los dos documentos de evidencia aún no aprobados; ninguna tarea
+  posterior fue ejecutada ni ningún criterio de cierre quedó satisfecho.
+- El `2026-10-01`, después de la aceptación y aprobación independiente de
+  `ADR-0003` y de la aprobación de `plan.md` 1.0.1, el Product Owner aprobó
+  explícitamente `tasks.md` 1.0.2. Se conservan las 104 tareas, sus
+  dependencias, fases, gates, owners de evidencia final y matrices de
+  trazabilidad. SPEC-001 pasa de `Plan Approved` a `Ready for Implementation`
+  únicamente como disponibilidad documental. `TASK-001-001` fue iniciada
+  parcialmente en el pasado, continúa `Pendiente` y no se reanuda por este
+  acto; ninguna tarea se ejecutó o completó por esta aprobación. La evidencia
+  parcial de `docs/supply-chain/` permanece incompleta y sin aprobar; no se
+  creó implementación. Reanudar `TASK-001-001` y avanzar a `In Progress`
+  requieren autorización posterior e independiente. La implementación sigue
+  pausada.
 
-## Aprobación de tareas
+### Aprobación histórica de `tasks.md` 1.0.1
 
 - **Aprobación:** `Aprobado`
 - **Aprobado por:** `Product Owner`
@@ -2018,6 +2071,21 @@ El grafo tiene **dos componentes débilmente conexas**:
   acciones.
 
 La aprobación histórica de `tasks.md` 1.0.0 figura en el control de cambios.
-La aprobación de `tasks.md` 1.0.1 habilita su disponibilidad documental para
-una futura implementación; no ejecuta tareas ni autoriza por sí sola avanzar
-SPEC-001 a `In Progress`.
+La aprobación de `tasks.md` 1.0.1 habilitó entonces su disponibilidad
+documental; no ejecutó tareas ni autorizó por sí sola avanzar SPEC-001 a
+`In Progress`. La autorización posterior y la pausa actual constan en
+`spec.md`.
+
+## Aprobación de tareas
+
+- **Aprobación:** `Aprobado`
+- **Aprobado por:** `Product Owner`
+- **Fecha de aprobación:** `2026-10-01`
+- **Referencia:** Aprobación explícita del Product Owner del `2026-10-01` de
+  `tasks.md` 1.0.2, comprendiendo sus 104 tareas, dependencias, fases, gates,
+  ownership de evidencia final y matrices de trazabilidad, la incorporación
+  de la topología aceptada en `ADR-0003` y la alineación con `plan.md` 1.0.1.
+  Esta aprobación hace disponible el plan de tareas; no ejecuta ninguna tarea,
+  no completa `TASK-001-001`, no valida la evidencia incompleta de
+  `docs/supply-chain/` ni crea implementación. Avanzar a `In Progress`
+  requiere autorización posterior e independiente.

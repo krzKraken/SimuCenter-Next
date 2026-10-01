@@ -7,7 +7,7 @@
 - **Estado:** `Ready for Implementation`
 - **Responsable:** `Product Owner`
 - **Fecha:** `2026-09-19`
-- **Última actualización:** `2026-09-29`
+- **Última actualización:** `2026-10-01`
 
 ## Problema
 
@@ -700,6 +700,56 @@ requisitos y permanecen vigentes durante la revisión del cambio posterior.
   de aceptación obtuvo evidencia por este acto. Iniciar `TASK-001-001` o
   cualquier otra tarea y avanzar a `In Progress` requieren autorización
   posterior e independiente.
+- El `2026-09-29`, Product Owner autorizó el inicio de implementación de
+  SPEC-001 y exclusivamente la ejecución de `TASK-001-001` conforme a
+  `tasks.md` 1.0.1. SPEC-001 pasa de `Ready for Implementation` a `In Progress`.
+  Se inició `TASK-001-001` mediante consultas oficiales y la documentación de
+  su resolución. La plantilla de tareas no define un estado activo o final,
+  por lo que su campo de ejecución conserva `Pendiente` y no se declara
+  completada. Ninguna tarea posterior está autorizada; `G0` y `G1` consumirán
+  después la evidencia y no se ejecutan en este inicio.
+- El `2026-09-30`, la investigación de bases OCI de `TASK-001-001` reveló una
+  decisión material incompleta: Envoy no podía asumir el servicio directo de
+  archivos mediante su filtro `file_server`, oficialmente incompleto y no apto
+  para producción. El Product Owner aprobó corregir la topología con Envoy
+  como único límite público y un origen interno `web-static` NGINX, así como
+  las bases OCI y restricciones especificadas para la revisión del plan.
+  `plan.md` se reabre como `1.0.1-draft` y `tasks.md` como `1.0.2-draft`;
+  ambos quedan pendientes de aprobación documental independiente. SPEC-001
+  vuelve temporalmente de `In Progress` a `Design Approved` y la implementación
+  queda pausada. No se ejecutó ninguna tarea posterior. Solo aprobar
+  `plan.md` 1.0.1 permite volver a `Plan Approved`; después, aprobar
+  `tasks.md` 1.0.2 permite volver a `Ready for Implementation`. Reanudar
+  `TASK-001-001` exige una autorización posterior independiente. Los
+  requisitos y criterios de aceptación aprobados permanecen vigentes.
+- El `2026-10-01`, después de la aceptación y aprobación independiente de
+  `ADR-0003`, el Product Owner aprobó explícitamente `plan.md` 1.0.1. SPEC-001
+  pasa de `Design Approved` a `Plan Approved`. `tasks.md` 1.0.2 continúa en
+  `Draft`, con aprobación `Pendiente`; su aprobación requiere un acto posterior
+  e independiente. SPEC-001 no está en `Ready for Implementation` ni en
+  `In Progress`. `TASK-001-001` continúa `Pendiente`; ninguna tarea fue
+  reanudada o completada por esta aprobación y la implementación permanece
+  pausada. Reanudar `TASK-001-001` y avanzar a `In Progress` requieren otra
+  autorización independiente, posterior a la aprobación de las tareas.
+- El `2026-10-01`, mediante un acto posterior e independiente, el Product Owner
+  aprobó explícitamente `tasks.md` 1.0.2, después de la aceptación de
+  `ADR-0003` y la aprobación de `plan.md` 1.0.1. SPEC-001 pasa de
+  `Plan Approved` a `Ready for Implementation`: las 104 tareas están disponibles
+  documentalmente, pero esta transición no autoriza ejecutarlas. Ninguna tarea
+  fue ejecutada o completada por este acto; `TASK-001-001` continúa
+  `Pendiente`. `docs/supply-chain/resolved-versions.md` y
+  `docs/supply-chain/provenance-notes.md` se produjeron como trabajo parcial
+  local durante el inicio histórico autorizado de `TASK-001-001`; siguen
+  incompletos y sin seguimiento, y quedan excluidos del futuro commit
+  documental de `ADR-0003`, `plan.md`, `tasks.md` y esta transición de
+  SPEC-001. No forman parte del conjunto documental aprobado ni versionado
+  por ese commit, no constituyen evidencia final y no cierran `TASK-001-001`,
+  que permanece `Pendiente`. Incorporarlos y completarlos exige reanudar la
+  tarea mediante autorización posterior e independiente; no se creó
+  implementación y esta permanece pausada. Reanudar
+  `TASK-001-001` y avanzar SPEC-001 a `In Progress` requieren una autorización
+  posterior e independiente. Iniciar cualquier otra tarea requiere su
+  autorización conforme al gobierno vigente.
 
 ## Aprobación de requisitos
 
